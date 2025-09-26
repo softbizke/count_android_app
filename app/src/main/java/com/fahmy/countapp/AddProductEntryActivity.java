@@ -77,7 +77,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                 sendManualProductCount(
                     selectedProdId,
                     Long.parseLong(openingCount),
-                    Long.parseLong(openingCount),
+                    Long.parseLong(closingCount),
                     getTokenFromPrefs()
                 );
             }
@@ -105,18 +105,34 @@ public class AddProductEntryActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     final String respBody = response.body().string();
+                    Log.i("respBody11", respBody);
 
                     try {
-                        JSONArray arr = new JSONArray(respBody);
+
+                        JSONObject root = new JSONObject(respBody);
+
+                        // Get the "data" object
+                        JSONObject dataObj = root.getJSONObject("data");
+
+                        // Get the array inside "data"
+                        JSONArray arr = dataObj.getJSONArray("data");
+
                         List<Product> productList = new ArrayList<>();
 
-                        for (int i = 0; i < arr.length(); i++) {
-                            JSONObject obj = arr.getJSONObject(i);
-                            productList.add(new Product(
-                                    obj.getString("id"),
-                                    obj.getString("name")
-                            ));
+                        if(arr.length() > 0) {
+                            productList.clear();
+                            for (int i = 0; i < arr.length(); i++) {
+                                JSONObject obj = arr.getJSONObject(i);
+
+                                // Assuming Product has a constructor Product(String id, String name)
+                                productList.add(new Product(
+                                        obj.getString("id"),
+                                        obj.getString("name"),
+                                        obj.getString("barcode")
+                                ));
+                            }
                         }
+
 
                         runOnUiThread(() -> setupAutoComplete(productList));
 
@@ -186,17 +202,20 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                final String resBody = response.body().string();
                 if (response.isSuccessful()) {
-                    final String resBody = response.body().string();
                     Log.i("Product Entry", resBody);
-                    runOnUiThread(() ->
-                            Toast.makeText(AddProductEntryActivity.this, "Data added successfully",
-                                    Toast.LENGTH_SHORT).show()
+                    runOnUiThread(() -> {
+                            Toast.makeText(AddProductEntryActivity.this, "Data added successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+
                     );
                 } else {
+                    Log.e("Error inserting manual prod data", resBody);
                     runOnUiThread(() ->
                             Toast.makeText(AddProductEntryActivity.this,
-                                    "Server error: " + response.code(),
+                                    "Server error: " + resBody,
                                     Toast.LENGTH_SHORT).show()
                     );
                 }

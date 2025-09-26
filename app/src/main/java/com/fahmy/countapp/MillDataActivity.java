@@ -139,6 +139,7 @@ public class MillDataActivity extends AppCompatActivity {
                             JSONObject json = new JSONObject(respBody);
                             JSONArray data = json.getJSONArray("data");
 
+                            millReportEntryList.clear();
                             for (int i = 0; i < data.length(); i++) {
                                 JSONObject obj = data.getJSONObject(i);
 

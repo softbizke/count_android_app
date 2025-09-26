@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.fahmy.countapp.Adapters.ProductEntryAdapter;
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.MillData;
+import com.fahmy.countapp.Data.Product;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -40,6 +41,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -207,24 +210,37 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                final String respBody = response.body().string();
                 if (response.isSuccessful()) {
-                    final String respBody = response.body().string();
                     runOnUiThread(() -> {
                         try {
-                            JSONObject json = new JSONObject(respBody);
-                            JSONArray data = json.getJSONArray("data");
+                            JSONObject root = new JSONObject(respBody);
 
-                            for (int i = 0; i < data.length(); i++) {
-                                JSONObject obj = data.getJSONObject(i);
+                            // Get the "data" object
+                            JSONObject dataObj = root.getJSONObject("data");
 
-                                String productTitle = obj.optString("name"); // or obj.optString("product_name") depending on API
-                                String openingCount = obj.optString("opening_count");
-                                String closingCount = obj.optString("closing_count");
-                                String totalCount   = obj.optString("total_count");
-                                String totalBales   = obj.optString("total_bales");
+                            // Get the array inside "data"
+                            JSONArray arr = dataObj.getJSONArray("data");
 
-                                productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, totalBales));
-                                adapter.notifyDataSetChanged();
+                            productEntriesList.clear();
+                            if(arr.length() > 0) {
+                                for (int i = 0; i < arr.length(); i++) {
+                                    JSONObject obj = arr.getJSONObject(i);
+
+                                    String productTitle = obj.optString("product_name"); // or obj.optString("product_name") depending on API
+                                    String openingCount = obj.optString("opening_count");
+                                    String closingCount = obj.optString("closing_count");
+                                    String totalCount = obj.optString("total_count", "0");
+                                    String totalBalesStr = obj.optString("total_bales", "0");
+
+                                    totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
+                                    BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
+
+                                    double totalBalesLong = totalBales.doubleValue();
+
+                                    productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong)));
+                                    adapter.notifyDataSetChanged();
+                                }
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -232,9 +248,10 @@ public class MainActivity extends AppCompatActivity {
                                     "Error fetching product counts: " + e.getMessage(),
                                     Toast.LENGTH_LONG).show();
                         }
-                        Log.d("ProductCounts", respBody);
+                        Log.i("ProductCounts", respBody);
                     });
                 } else {
+                    Log.e("Error ProductCounts ", respBody);
                     runOnUiThread(() -> Toast.makeText(MainActivity.this,
                             "Error fetching product counts: " + response.code(),
                             Toast.LENGTH_SHORT).show());
@@ -290,5 +307,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkSignedIn();
+        String token = getTokenFromPrefs();
+        fetchManualProductCounts(token, 1, 1000, "" );
     }
 }
