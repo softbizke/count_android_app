@@ -10,38 +10,16 @@
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
+        android:fitsSystemWindows="true"
         android:layout_height="match_parent">
 
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/scrollContent"
+
+        <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:fillViewport="true">
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_alignParentStart="true"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="10dp"
-                android:id="@+id/dataContainer"
-                android:background="@drawable/card_bg"
-                >
-
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/millDataRv"
-                    />
-
-            </LinearLayout>
-
-        </androidx.core.widget.NestedScrollView>
+            android:id="@+id/millDataRv"
+            />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

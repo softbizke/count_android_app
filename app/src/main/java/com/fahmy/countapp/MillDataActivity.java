@@ -33,6 +33,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -134,19 +136,29 @@ public class MillDataActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     final String respBody = response.body().string();
+                    Log.i("mill data report respBody", respBody);
                     runOnUiThread(() -> {
                         try {
-                            JSONObject json = new JSONObject(respBody);
-                            JSONArray data = json.getJSONArray("data");
+                            JSONObject root = new JSONObject(respBody);
+
+                            // Get the "data" object
+                            JSONObject dataObj = root.getJSONObject("data");
+
+                            // Get the array inside "data"
+                            JSONArray arr = dataObj.getJSONArray("data");
 
                             millReportEntryList.clear();
-                            for (int i = 0; i < data.length(); i++) {
-                                JSONObject obj = data.getJSONObject(i);
+                            if(arr.length() > 0) {
+                                for (int i = 0; i < arr.length(); i++) {
 
-                                String millCapacity   = obj.optString("mill_capacity");
-                                String millExtraction = obj.optString("mill_extraction");
+                                    JSONObject obj = arr.getJSONObject(i);
 
-                                millReportEntryList.add(new MillData(millCapacity, millExtraction));
+                                    String millCapacity   = obj.optString("mill_capacity");
+                                    String millExtraction = obj.optString("mill_extraction");
+
+                                    millReportEntryList.add(new MillData(millCapacity, millExtraction));
+                                }
+                                adapter.notifyDataSetChanged();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

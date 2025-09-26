@@ -239,8 +239,9 @@ public class MainActivity extends AppCompatActivity {
                                     double totalBalesLong = totalBales.doubleValue();
 
                                     productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong)));
-                                    adapter.notifyDataSetChanged();
+
                                 }
+                                adapter.notifyDataSetChanged();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

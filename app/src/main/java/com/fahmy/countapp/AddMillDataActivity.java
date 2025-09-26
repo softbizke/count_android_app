@@ -1,5 +1,6 @@
 package com.fahmy.countapp;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -62,8 +63,8 @@ public class AddMillDataActivity extends AppCompatActivity {
             } else  {
 
                 sendManualMillReport(
-                    Long.parseLong(millCapacity),
-                    Long.parseLong(millExtraction),
+                    millCapacity,
+                    millExtraction,
                     getTokenFromPrefs()
                 );
             }
@@ -71,7 +72,7 @@ public class AddMillDataActivity extends AppCompatActivity {
     }
 
 
-    private void sendManualMillReport( long millCapacity, long millExtraction, String jwtToken) {
+    private void sendManualMillReport( String millCapacity, String millExtraction, String jwtToken) {
 
         OkHttpClient client = new OkHttpClient();
 
@@ -81,6 +82,7 @@ public class AddMillDataActivity extends AppCompatActivity {
             json.put("mill_capacity", millCapacity);
             json.put("mill_extraction", millExtraction);
         } catch (JSONException e) {
+            Log.i("Mill Report Entry", "Am here12");
             e.printStackTrace();
             Toast.makeText(AddMillDataActivity.this, "Something went wrong: " + e.getMessage(),
                     Toast.LENGTH_SHORT).show();
@@ -98,9 +100,13 @@ public class AddMillDataActivity extends AppCompatActivity {
                 .post(body)
                 .build();
 
+        Log.i("Mill Report Entry", "Am here");
+
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
+
+                Log.e("OnFailure Mill Report Entry", e.getMessage().toString());
                 runOnUiThread(() ->
                         Toast.makeText(AddMillDataActivity.this, "Network error: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show()
@@ -109,14 +115,18 @@ public class AddMillDataActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                final String resBody = response.body().string();
                 if (response.isSuccessful()) {
-                    final String resBody = response.body().string();
                     Log.i("Mill Report Entry", resBody);
-                    runOnUiThread(() ->
-                            Toast.makeText(AddMillDataActivity.this, "Data added successfully",
-                                    Toast.LENGTH_SHORT).show()
-                    );
+                    runOnUiThread(() ->{
+                        Toast.makeText(AddMillDataActivity.this, "Data added successfully",
+                                Toast.LENGTH_SHORT).show();
+                        AddMillDataActivity.this.startActivity(new Intent(AddMillDataActivity.this, MillDataActivity.class));
+                        finish();
+                    });
                 } else {
+                    Log.e("sERVERError Mill Report Entry", resBody);
                     runOnUiThread(() ->
                             Toast.makeText(AddMillDataActivity.this,
                                     "Server error: " + response.code(),
