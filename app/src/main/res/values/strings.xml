@@ -28,4 +28,5 @@
     <string name="App_Name">CountApp</string>
     <string name="add_mill_data">Add Mill Data</string>
     <string name="add_count_data">Add Count Data</string>
+    <string name="verify_code">Verify Code</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.fahmy.countapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 import com.fahmy.countapp.Data.ApiBase;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -110,6 +113,17 @@ public class LoginActivity extends AppCompatActivity {
                                         resp,
                                         Toast.LENGTH_LONG).show();
                                 if(isCodeSent) {
+
+                                    try {
+
+                                        JSONObject json = new JSONObject(resp);
+                                        String token = json.getString("token");
+                                        getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().putString("jwt_token", token).apply();
+
+                                    } catch (JSONException e) {
+                                        throw new RuntimeException(e);
+                                    }
+
                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
@@ -117,6 +131,7 @@ public class LoginActivity extends AppCompatActivity {
                                     isCodeSent = true;
                                     codeEt.setVisibility(TextView.VISIBLE);
                                     codeTv.setVisibility(TextView.VISIBLE);
+                                    submitBtn.setText(R.string.verify_code);
                                 }
                             } else {
                                 Toast.makeText(LoginActivity.this,
