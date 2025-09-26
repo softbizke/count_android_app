@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_add_count"
+        android:title="@string/add_count_data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_mill"
+        android:title="@string/add_mill_data"
+        app:showAsAction="never" />
+</menu>

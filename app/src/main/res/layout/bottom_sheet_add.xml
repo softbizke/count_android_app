@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/addCountData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_count_data"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/light_gray" />
+
+    <TextView
+        android:id="@+id/addMillData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_mill_data"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true" />
+
+</LinearLayout>

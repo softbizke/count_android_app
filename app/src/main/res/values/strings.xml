@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Count App</string>
+    <string name="add_new_data">Add new data</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="profile_image">Profile Image</string>
+    <string name="total_products">Total Products</string>
+    <string name="total_bales">Total Bales</string>
+    <string name="products">Products</string>
+    <string name="bales">Bales</string>
+    <string name="entries">Entries</string>
+    <string name="logo">logo</string>
+    <string name="eg_254712345678">eg. 254712345678</string>
+    <string name="login_to_continue">Login To Continue</string>
+    <string name="submit">Submit</string>
+    <string name="enter_your_phone_number">Enter your phone number</string>
+    <string name="enter_the_code_sent_on_your_phone">Enter the code sent on your phone</string>
+    <string name="send_code">Send Code</string>
+    <string name="add_product_report">Add Product Report</string>
+    <string name="enter_the_opening_tonnes">Enter the opening tonnes</string>
+    <string name="enter_the_closing_tonnes">Enter the closing tonnes</string>
+    <string name="start_typing_a_product">Start typing a product…</string>
+    <string name="select_product">Select Product</string>
+    <string name="add_mill_report">Add Mill Report</string>
+    <string name="enter_the_mill_capacity">Enter The Mill Capacity</string>
+    <string name="enter_the_mill_extraction">Enter The Mill Extraction</string>
+    <string name="mill_data">Mill Data</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="App_Name">CountApp</string>
+    <string name="add_mill_data">Add Mill Data</string>
+    <string name="add_count_data">Add Count Data</string>
+</resources>
