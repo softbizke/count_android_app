@@ -1,6 +1,8 @@
 package com.fahmy.countapp.Adapters;
 
 import android.content.Context;
+import android.media.Image;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +12,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -39,9 +43,19 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
         holder.productTitleTv.setText(productEntry.getProductTitle());
         holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());
         holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
-        holder.totalCountTv.setText(productEntry.getTotalCount() + " kgs");
+        holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
         holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
 
+        Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
+        if(!productEntry.getPhoto_path().isEmpty()) {
+
+            Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
+            Picasso.get()
+                .load(ApiBase.ROOT.getUrl() + productEntry.getPhoto_path())
+                .placeholder(R.drawable.baseline_document_scanner_24)
+                .error(R.drawable.baseline_document_scanner_24)
+                .into(holder.photoIv);
+        }
     }
 
     @Override
@@ -51,6 +65,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView productTitleTv, openingCountTv, closingCountTv, totalCountTv, totalBalesTv;
+        ImageView photoIv;
 
         public ViewHolder(View view) {
             super(view);
@@ -59,6 +74,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
             closingCountTv = view.findViewById(R.id.closingCountTv);
             totalCountTv = view.findViewById(R.id.totalCountTv);
             totalBalesTv = view.findViewById(R.id.totalBalesTv);
+            photoIv = view.findViewById(R.id.photoIv);
         }
     }
 }

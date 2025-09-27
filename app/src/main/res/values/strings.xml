@@ -16,8 +16,8 @@
     <string name="enter_the_code_sent_on_your_phone">Enter the code sent on your phone</string>
     <string name="send_code">Send Code</string>
     <string name="add_product_report">Add Product Report</string>
-    <string name="enter_the_opening_tonnes">Enter the opening tonnes</string>
-    <string name="enter_the_closing_tonnes">Enter the closing tonnes</string>
+    <string name="enter_the_opening_tonnes">Enter the opening count</string>
+    <string name="enter_the_closing_tonnes">Enter the closing count</string>
     <string name="start_typing_a_product">Start typing a product…</string>
     <string name="select_product">Select Product</string>
     <string name="add_mill_report">Add Mill Report</string>
@@ -29,4 +29,7 @@
     <string name="add_mill_data">Add Mill Data</string>
     <string name="add_count_data">Add Count Data</string>
     <string name="verify_code">Verify Code</string>
+    <string name="logout">Logout</string>
+    <string name="capture_image">Click to Capture Machine Picture</string>
+    <string name="capture_picture">Click to Capture Machine picture</string>
 </resources>

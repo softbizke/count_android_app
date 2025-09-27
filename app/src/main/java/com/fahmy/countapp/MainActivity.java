@@ -114,12 +114,13 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_add_count){
-            startActivity(new Intent(MainActivity.this, AddProductEntryActivity.class));
-            return true;
-        }
-        if (item.getItemId() == R.id.action_add_mill){
-            startActivity(new Intent(MainActivity.this, AddMillDataActivity.class));
+        if (item.getItemId() == R.id.logout){
+            getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                    .edit()
+                    .remove("jwt_token")
+                    .apply();
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -211,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 final String respBody = response.body().string();
+
                 if (response.isSuccessful()) {
                     runOnUiThread(() -> {
                         try {
@@ -232,13 +234,14 @@ public class MainActivity extends AppCompatActivity {
                                     String closingCount = obj.optString("closing_count");
                                     String totalCount = obj.optString("total_count", "0");
                                     String totalBalesStr = obj.optString("total_bales", "0");
+                                    String filePath = obj.optString("photo_path", "");
 
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
                                     double totalBalesLong = totalBales.doubleValue();
 
-                                    productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong)));
+                                    productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong), filePath));
 
                                 }
                                 adapter.notifyDataSetChanged();
@@ -277,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.logout_menu, menu);
 
         return true;
     }

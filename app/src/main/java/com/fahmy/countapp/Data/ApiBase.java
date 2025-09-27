@@ -1,7 +1,8 @@
 package com.fahmy.countapp.Data;
 
 public enum ApiBase {
-    DEV("http://192.168.2.202:5000/api");
+    DEV("http://192.168.2.202:5000/api"),
+    ROOT("http://192.168.2.202:5000/");
 
     private final String url;
 

@@ -1,36 +1,58 @@
 package com.fahmy.countapp;
 
+import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.Product;
+import com.fahmy.countapp.Data.Util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -42,6 +64,12 @@ public class AddProductEntryActivity extends AppCompatActivity {
     AutoCompleteTextView autoText;
     Button submitBtn;
     EditText openingCountEt, closingCountEt;
+    ImageView selectImgIv;
+
+    private static final int CAMERA_PERMISSION_CODE = 101;
+    private Uri photoUri;
+    private ActivityResultLauncher<Uri> takePictureLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,11 +83,51 @@ public class AddProductEntryActivity extends AppCompatActivity {
             actionBar.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24);
         }
 
+
+        selectImgIv = findViewById(R.id.selectImgIv);
+
+        takePictureLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(),
+            new ActivityResultCallback<Boolean>() {
+                @Override
+                public void onActivityResult(Boolean success) {
+                    if (success != null && success) {
+                        selectImgIv.setImageURI(photoUri);
+
+                        // If you need to refresh (sometimes needed for newly saved images):
+                        selectImgIv.invalidate();
+//                        Toast.makeText(AddProductEntryActivity.this,
+//                                "Photo saved: " + photoUri.toString(),
+//                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        );
+
+
         autoText = findViewById(R.id.productsAutoText);
         submitBtn = findViewById(R.id.submitBtn);
         openingCountEt = findViewById(R.id.openingCountEt);
         closingCountEt = findViewById(R.id.closingCountEt);
+
+
         fetchProducts(getTokenFromPrefs());
+
+        selectImgIv.setOnClickListener(v->{
+
+            //ask for permissions
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                launchCamera();
+            } else {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.CAMERA},
+                        CAMERA_PERMISSION_CODE);
+            }
+
+        });
+
         submitBtn.setOnClickListener(v-> {
             String openingCount = openingCountEt.getText().toString();
             String closingCount = closingCountEt.getText().toString();
@@ -72,14 +140,25 @@ public class AddProductEntryActivity extends AppCompatActivity {
             } else if(closingCount.isEmpty()) {
                 closingCountEt.setError("This field is required");
                 closingCountEt.requestFocus();
-            } else  {
+            } else if(photoUri == null) {
 
-                sendManualProductCount(
-                    selectedProdId,
-                    Long.parseLong(openingCount),
-                    Long.parseLong(closingCount),
-                    getTokenFromPrefs()
-                );
+                Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the machine recordings to continue", Toast.LENGTH_LONG).show();
+            }else  {
+
+                File imageFile = new Util().getFileFromUri(photoUri, AddProductEntryActivity.this);
+                if (imageFile == null || !imageFile.exists()) {
+                    Toast.makeText(this, "Something went wrong. Please capture the Image again.", Toast.LENGTH_SHORT).show();
+                } else {
+                    sendManualProductCount(
+                        selectedProdId,
+                        Long.parseLong(openingCount),
+                        Long.parseLong(closingCount),
+                        getTokenFromPrefs(),
+                        imageFile
+                    );
+                }
+
+
             }
         });
 
@@ -126,9 +205,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
                                 // Assuming Product has a constructor Product(String id, String name)
                                 productList.add(new Product(
-                                        obj.getString("id"),
-                                        obj.getString("name"),
-                                        obj.getString("barcode")
+                                    obj.getString("id"),
+                                    obj.getString("name"),
+                                    obj.getString("barcode"),
+                                    obj.getString("description")
                                 ));
                             }
                         }
@@ -146,12 +226,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
     private void setupAutoComplete(List<Product> products) {
 
-
-        ArrayAdapter<Product> adapter = new ArrayAdapter<>(
-                this,
+        ArrayAdapter<Product> adapter =
+            new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line,
-                products
-        );
+                products);
 
         autoText.setAdapter(adapter);
 
@@ -163,60 +241,74 @@ public class AddProductEntryActivity extends AppCompatActivity {
     }
 
 
-    private void sendManualProductCount(String productId, long openingCount, long closingCount, String jwtToken) {
+    private void sendManualProductCount(
+            String productId,
+            long openingCount,
+            long closingCount,
+            String jwtToken,
+            File imageFile
+    ) {
 
         OkHttpClient client = new OkHttpClient();
 
-        // JSON body
-        JSONObject json = new JSONObject();
-        try {
-            json.put("product_id", productId);
-            json.put("opening_count", openingCount);
-            json.put("closing_count", closingCount);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(AddProductEntryActivity.this, "Something went wrong: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
-            return;
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("product_id", productId)
+                .addFormDataPart("opening_count", String.valueOf(openingCount))
+                .addFormDataPart("closing_count", String.valueOf(closingCount));
+
+        if (imageFile != null && imageFile.exists()) {
+            builder.addFormDataPart(
+                    "image",                                // field name in Node route
+                    imageFile.getName(),                    // file name to send
+                    RequestBody.create(
+                            imageFile,
+                            MediaType.parse("image/*")       // let server accept any image type
+                    )
+            );
         }
 
-        RequestBody body = RequestBody.create(
-                json.toString(),
-                okhttp3.MediaType.parse("application/json; charset=utf-8")
-        );
+        RequestBody requestBody = builder.build();
 
         Request request = new Request.Builder()
                 .url(ApiBase.DEV.getUrl() + "/manual-products-count")
-                .addHeader("Authorization", "Bearer " + jwtToken) // <-- pass your JWT
-                .post(body)
+                .addHeader("Authorization", "Bearer " + jwtToken)
+                .post(requestBody)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 runOnUiThread(() ->
-                        Toast.makeText(AddProductEntryActivity.this, "Network error: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                                AddProductEntryActivity.this,
+                                "Network error: " + e.getMessage(),
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                final String resBody = response.body().string();
+                final String resBody = response.body() != null ? response.body().string() : "";
                 if (response.isSuccessful()) {
                     Log.i("Product Entry", resBody);
                     runOnUiThread(() -> {
-                            Toast.makeText(AddProductEntryActivity.this, "Data added successfully", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-
-                    );
+                        Toast.makeText(
+                                AddProductEntryActivity.this,
+                                "Data added successfully",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        finish();
+                    });
                 } else {
                     Log.e("Error inserting manual prod data", resBody);
                     runOnUiThread(() ->
-                            Toast.makeText(AddProductEntryActivity.this,
+                            Toast.makeText(
+                                    AddProductEntryActivity.this,
                                     "Server error: " + resBody,
-                                    Toast.LENGTH_SHORT).show()
+                                    Toast.LENGTH_SHORT
+                            ).show()
                     );
                 }
             }
@@ -237,4 +329,39 @@ public class AddProductEntryActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+    private void launchCamera() {
+        try {
+            File imageFile = File.createTempFile("photo_", ".jpg", getCacheDir());
+            photoUri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    imageFile);
+            takePictureLauncher.launch(photoUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error creating file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Handle the permission result
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                launchCamera();
+            } else {
+                Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }

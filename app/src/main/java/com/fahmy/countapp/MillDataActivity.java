@@ -98,12 +98,13 @@ public class MillDataActivity extends AppCompatActivity {
             return true;
         }
 
-        if (item.getItemId() == R.id.action_add_count){
-            startActivity(new Intent(MillDataActivity.this, AddProductEntryActivity.class));
-            return true;
-        }
-        if (item.getItemId() == R.id.action_add_mill){
-            startActivity(new Intent(MillDataActivity.this, AddMillDataActivity.class));
+        if (item.getItemId() == R.id.logout){
+            getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                    .edit()
+                    .remove("jwt_token")
+                    .apply();
+            startActivity(new Intent(MillDataActivity.this, LoginActivity.class));
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -155,8 +156,9 @@ public class MillDataActivity extends AppCompatActivity {
 
                                     String millCapacity   = obj.optString("mill_capacity");
                                     String millExtraction = obj.optString("mill_extraction");
+                                    String filePath = obj.optString("photo_path", "");
 
-                                    millReportEntryList.add(new MillData(millCapacity, millExtraction));
+                                    millReportEntryList.add(new MillData(millCapacity, millExtraction, filePath));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -185,7 +187,7 @@ public class MillDataActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.logout_menu, menu);
 
         return true;
     }

@@ -4,14 +4,17 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.MillData;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -39,6 +42,15 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
         holder.millCapacityTv.setText("Mill Capacity: " + millData.getMillCapacity());
         holder.millExtractionTv.setText("Mill Extraction: " + millData.getMillExtraction());
 
+        if(!millData.getPhoto_path().isEmpty()) {
+
+            Picasso.get()
+                .load(ApiBase.ROOT.getUrl() + millData.getPhoto_path())
+                .placeholder(R.drawable.baseline_document_scanner_24)
+                .error(R.drawable.baseline_document_scanner_24)
+                .into(holder.photoIv);
+        }
+
     }
 
     @Override
@@ -47,11 +59,13 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
     }
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView millCapacityTv, millExtractionTv;
+        ImageView photoIv;
 
         public ViewHolder(View view) {
             super(view);
             millCapacityTv = view.findViewById(R.id.millCapacityTv);
             millExtractionTv = view.findViewById(R.id.millExtractionTv);
+            photoIv = view.findViewById(R.id.photoIv);
         }
     }
 }
