@@ -26,13 +26,16 @@ import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.MillData;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
+import com.fahmy.countapp.Data.UserRoles;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -68,6 +71,16 @@ public class MillDataActivity extends AppCompatActivity {
         fetchManualMillData(token, 1, 1000, "" );
     }
 
+    private void checkUserRole() {
+        User userDet = getUserFromPrefs();
+
+        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+
+            startActivity(new Intent(MillDataActivity.this, MainActivity.class));
+            finish();
+        }
+    }
+
 
     private void setUpUiMainFeatures() {
         drawerLayout = findViewById(R.id.main);
@@ -79,6 +92,10 @@ public class MillDataActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true); // Show hamburger
             actionBar.setHomeAsUpIndicator(R.drawable.baseline_menu_24); // Hamburger icon
         }
+
+
+
+
         navigationView.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_home) {
                 startActivity(new Intent(MillDataActivity.this, MainActivity.class));
@@ -188,6 +205,12 @@ public class MillDataActivity extends AppCompatActivity {
     private String getTokenFromPrefs() {
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         return prefs.getString("jwt_token", null);
+    }
+
+    private User getUserFromPrefs() {
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String userJson = prefs.getString("user", null);
+        return userJson == null?null:new Gson().fromJson(userJson, (Type) User.class);
     }
 
     @Override
