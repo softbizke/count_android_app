@@ -1,11 +1,12 @@
 package com.fahmy.countapp.Data;
 
 public class User {
-    private String userId, phoneNo;
+    private String userId, phoneNo, role;
 
-    public User(String userId, String phoneNo) {
+    public User(String userId, String phoneNo, String role) {
         this.userId = userId;
         this.phoneNo = phoneNo;
+        this.role = role;
     }
 
     public String getUserId() {
@@ -22,5 +23,13 @@ public class User {
 
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

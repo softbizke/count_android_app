@@ -99,10 +99,15 @@ public class MillDataActivity extends AppCompatActivity {
         }
 
         if (item.getItemId() == R.id.logout){
-            getSharedPreferences("MyPrefs", MODE_PRIVATE)
-                    .edit()
-                    .remove("jwt_token")
-                    .apply();
+            SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+            prefs
+                .edit()
+                .remove("jwt_token")
+                .apply();
+            prefs
+                .edit()
+                .remove("user")
+                .apply();
             startActivity(new Intent(MillDataActivity.this, LoginActivity.class));
             finish();
             return true;

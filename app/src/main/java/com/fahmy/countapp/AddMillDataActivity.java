@@ -108,12 +108,22 @@ public class AddMillDataActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(v-> {
             String millCapacity = millCapacityEt.getText().toString();
             String millExtraction = millExtractionEt.getText().toString();
+            EditText confirmMillCapacityEt = findViewById(R.id.confirmMillCapacityEt);
+            EditText confirmMillExtractionEt = findViewById(R.id.confirmMillExtractionEt);
+            String confirmMillCapacity = confirmMillCapacityEt.getText().toString();
+            String confirmMillExtraction = confirmMillExtractionEt.getText().toString();
             if(millCapacity.isEmpty()) {
                 millCapacityEt.setError("This field is required");
                 millCapacityEt.requestFocus();
             } else if(millExtraction.isEmpty()) {
                 millExtractionEt.setError("This field is required");
                 millExtractionEt.requestFocus();
+            }else if(!confirmMillCapacity.equals(millCapacity)) {
+                confirmMillCapacityEt.setError("The mill capacity values do not match, please double check");
+                confirmMillCapacityEt.requestFocus();
+            }else if(!confirmMillExtraction.equals(millExtraction)) {
+                confirmMillExtractionEt.setError("The mill extraction values do not match, please double check");
+                confirmMillExtractionEt.requestFocus();
             } else if (photoUri == null) {
                     Toast.makeText(this, "Please capture the machine reading photo before submitting.", Toast.LENGTH_SHORT).show();
             }else  {

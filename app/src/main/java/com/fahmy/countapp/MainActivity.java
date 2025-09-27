@@ -30,9 +30,11 @@ import com.fahmy.countapp.Data.MillData;
 import com.fahmy.countapp.Data.Product;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
+import com.fahmy.countapp.Data.UserRoles;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +43,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rv;
     ProductEntryAdapter adapter;
     DrawerLayout drawerLayout;
+    NavigationView navigationView;
     User user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,15 +83,13 @@ public class MainActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
 
         checkSignedIn();
-        String token = getTokenFromPrefs();
-        fetchManualProductCounts(token, 1, 1000, "" );
 
 
     }
 
     private void setUpUiMainFeatures() {
         drawerLayout = findViewById(R.id.main);
-        NavigationView navigationView = findViewById(R.id.navigation_view);
+        navigationView = findViewById(R.id.navigation_view);
 
 
         ActionBar actionBar = getSupportActionBar();
@@ -95,6 +97,18 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true); // Show hamburger
             actionBar.setHomeAsUpIndicator(R.drawable.baseline_menu_24); // Hamburger icon
         }
+
+        User userDet = user!= null? user: getUserFromPrefs();
+
+        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+
+            Menu menu = navigationView.getMenu();
+            MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
+            if (millDataItem != null) {
+                millDataItem.setVisible(false);
+            }
+        }
+
         navigationView.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_home) {
                 //
@@ -107,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -115,10 +130,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (item.getItemId() == R.id.logout){
-            getSharedPreferences("MyPrefs", MODE_PRIVATE)
-                    .edit()
-                    .remove("jwt_token")
-                    .apply();
+            SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+            prefs
+                .edit()
+                .remove("jwt_token")
+                .apply();
+            prefs
+                .edit()
+                .remove("user")
+                .apply();
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
             return true;
@@ -133,55 +153,64 @@ public class MainActivity extends AppCompatActivity {
         if (token == null || token.isEmpty()) {
 
             redirectToLogin();
-            return;
-        }
 
-        OkHttpClient client = new OkHttpClient();
+        }else {
 
-        // Build request with Authorization header
-        Request request = new Request.Builder()
-                .url(ApiBase.CURRENT.getUrl() + "/auth/signedin")
-                .addHeader("Authorization", "Bearer " + token)
-                .get()
-                .build();
+            OkHttpClient client = new OkHttpClient();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                // Network error – handle gracefully (e.g., show a Toast on UI thread)
-                runOnUiThread(() ->
-                        Toast.makeText(MainActivity.this, "Network error: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show());
-            }
+            // Build request with Authorization header
+            Request request = new Request.Builder()
+                    .url(ApiBase.CURRENT.getUrl() + "/auth/signedin")
+                    .addHeader("Authorization", "Bearer " + token)
+                    .get()
+                    .build();
 
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    // 401 or 403 → not signed in
-                    runOnUiThread(() -> redirectToLogin());
-                    return;
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    // Network error – handle gracefully (e.g., show a Toast on UI thread)
+                    runOnUiThread(() ->
+                            Toast.makeText(MainActivity.this, "Network error: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show());
                 }
 
-                String body = response.body().string();
-                try {
-                    JSONObject json = new JSONObject(body);
-                    boolean signedIn = json.optBoolean("signedIn", false);
-                    if (!signedIn) {
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        // 401 or 403 → not signed in
                         runOnUiThread(() -> redirectToLogin());
-                    } else {
-                        JSONObject userJson = json.optJSONObject("user");
-                        user = new User(
-                            userJson.get("id").toString(),
-                            userJson.get("phone").toString()
-                        );
-
+                        return;
                     }
-                } catch (JSONException e) {
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                            "Invalid server response", Toast.LENGTH_SHORT).show());
+
+
+                    String body = response.body().string();
+                    try {
+                        JSONObject json = new JSONObject(body);
+                        boolean signedIn = json.optBoolean("signedIn", false);
+                        if (!signedIn) {
+                            runOnUiThread(() -> redirectToLogin());
+                        } else {
+                            JSONObject userJson = json.optJSONObject("user");
+                            user = new User(
+                                userJson.get("id").toString(),
+                                userJson.get("phone").toString(),
+                                userJson.get("role").toString()
+                            );
+                            getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().putString("user", new Gson().toJson(user)).apply();
+
+                            String token = getTokenFromPrefs();
+                            setUpUiMainFeatures();
+                            fetchManualProductCounts(token, 1, 1000, "" );
+
+                        }
+                    } catch (JSONException e) {
+                        Log.e("Signed in", e.getMessage());
+                        runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                                "Invalid server response", Toast.LENGTH_SHORT).show());
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 
@@ -277,6 +306,11 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         return prefs.getString("jwt_token", null);
     }
+    private User getUserFromPrefs() {
+        SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        String userJson = prefs.getString("user", null);
+        return userJson == null?null:new Gson().fromJson(userJson, (Type) User.class);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -293,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
         TextView addCount = bottomSheetView.findViewById(R.id.addCountData);
         TextView addMill = bottomSheetView.findViewById(R.id.addMillData);
 
+
+
         addCount.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             startActivity(new Intent(MainActivity.this, AddProductEntryActivity.class));
@@ -303,6 +339,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, AddMillDataActivity.class));
         });
 
+
+        User userDet = user!= null? user: getUserFromPrefs();
+
+        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+            addMill.setVisibility(View.GONE);
+        }
+
         bottomSheetDialog.show();
     }
 
@@ -311,7 +354,5 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkSignedIn();
-        String token = getTokenFromPrefs();
-        fetchManualProductCounts(token, 1, 1000, "" );
     }
 }

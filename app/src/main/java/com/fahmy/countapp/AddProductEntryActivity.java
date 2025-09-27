@@ -131,6 +131,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(v-> {
             String openingCount = openingCountEt.getText().toString();
             String closingCount = closingCountEt.getText().toString();
+            EditText confirmOpeningCountEt = findViewById(R.id.confirmOpeningCountEt);
+            EditText confirmClosingCountEt = findViewById(R.id.confirmClosingCountEt);
+            String confirmOpeningCount = confirmOpeningCountEt.getText().toString();
+            String confirmClosingCount = confirmClosingCountEt.getText().toString();
             if(selectedProdId == null || selectedProdId.isEmpty()) {
                 autoText.setError("This field is required");
                 autoText.requestFocus();
@@ -140,7 +144,13 @@ public class AddProductEntryActivity extends AppCompatActivity {
             } else if(closingCount.isEmpty()) {
                 closingCountEt.setError("This field is required");
                 closingCountEt.requestFocus();
-            } else if(photoUri == null) {
+            } else if(!confirmOpeningCount.equals(openingCount)) {
+                confirmOpeningCountEt.setError("The opening counts do not match, please double check");
+                confirmOpeningCountEt.requestFocus();
+            }else if(!confirmClosingCount.equals(closingCount)) {
+                confirmClosingCountEt.setError("The closing counts do not match, please double check");
+                confirmClosingCountEt.requestFocus();
+            }else if(photoUri == null) {
 
                 Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the machine recordings to continue", Toast.LENGTH_LONG).show();
             }else  {

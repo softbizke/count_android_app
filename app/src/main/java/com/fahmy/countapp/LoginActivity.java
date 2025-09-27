@@ -109,9 +109,6 @@ public class LoginActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             if (response.isSuccessful()) {
                                 // Handle JSON result here
-                                Toast.makeText(LoginActivity.this,
-                                        resp,
-                                        Toast.LENGTH_LONG).show();
                                 if(isCodeSent) {
 
                                     try {
@@ -132,6 +129,10 @@ public class LoginActivity extends AppCompatActivity {
                                     codeEt.setVisibility(TextView.VISIBLE);
                                     codeTv.setVisibility(TextView.VISIBLE);
                                     submitBtn.setText(R.string.verify_code);
+
+                                    Toast.makeText(LoginActivity.this,
+                                            resp,
+                                            Toast.LENGTH_LONG).show();
                                 }
                             } else {
                                 Toast.makeText(LoginActivity.this,
