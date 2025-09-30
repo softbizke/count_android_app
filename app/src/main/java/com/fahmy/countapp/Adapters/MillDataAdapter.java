@@ -39,6 +39,7 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull MillDataAdapter.ViewHolder holder, int position) {
         MillData millData = items.get(position);
+        holder.machineTv.setText(millData.getMachine());
         holder.millCapacityTv.setText("Mill Capacity: " + millData.getMillCapacity());
         holder.millExtractionTv.setText("Mill Extraction: " + millData.getMillExtraction());
 
@@ -58,11 +59,12 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
         return items.size();
     }
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView millCapacityTv, millExtractionTv;
+        TextView millCapacityTv, millExtractionTv, machineTv;
         ImageView photoIv;
 
         public ViewHolder(View view) {
             super(view);
+            machineTv = view.findViewById(R.id.machineTv);
             millCapacityTv = view.findViewById(R.id.millCapacityTv);
             millExtractionTv = view.findViewById(R.id.millExtractionTv);
             photoIv = view.findViewById(R.id.photoIv);

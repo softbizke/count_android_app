@@ -48,6 +48,22 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/select_the_mill_machine"
+            android:textSize="17sp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp"
+            />
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:id="@+id/machineSpinner"
+            android:background="@drawable/card_bg"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/enter_the_mill_capacity"
             android:textSize="17sp"
             android:layout_marginTop="15dp"
@@ -58,7 +74,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/millCapacityEt"
             android:background="@drawable/card_bg"
             />
@@ -76,7 +92,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/confirmMillCapacityEt"
             android:background="@drawable/card_bg"
             />
@@ -94,7 +110,10 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberPassword"
+            android:digits="0123456789."
+            android:maxLength="6"
+            android:hint="@string/enter_only_percentages_eg_70_25"
             android:id="@+id/millExtractionEt"
             android:background="@drawable/card_bg"
             />
@@ -103,7 +122,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm Mill Extraction"
+            android:text="@string/confirm_mill_extraction"
             android:textSize="17sp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="10dp"
@@ -113,7 +132,10 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberPassword"
+            android:digits="0123456789."
+            android:maxLength="6"
+            android:hint="@string/enter_only_percentages_eg_70_25"
             android:id="@+id/confirmMillExtractionEt"
             android:background="@drawable/card_bg"
             />

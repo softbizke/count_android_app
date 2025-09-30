@@ -2,10 +2,11 @@ package com.fahmy.countapp.Data;
 
 public class ProductEntry {
 
-    private String productTitle, openingCount, closingCount, totalCount, totalBales, photo_path;
+    private String productTitle, productDescription, openingCount, closingCount, totalCount, totalBales, photo_path;
 
-    public ProductEntry(String productTitle, String openingCount, String closingCount, String totalCount, String totalBales, String photo_path) {
+    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String totalCount, String totalBales, String photo_path) {
         this.productTitle = productTitle;
+        this.productDescription = productDescription;
         this.openingCount = openingCount;
         this.closingCount = closingCount;
         this.totalCount = totalCount;
@@ -19,6 +20,14 @@ public class ProductEntry {
 
     public void setProductTitle(String productTitle) {
         this.productTitle = productTitle;
+    }
+
+    public String getProductDescription() {
+        return productDescription;
+    }
+
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
     }
 
     public String getOpeningCount() {

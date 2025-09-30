@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.ProductEntry;
+import com.fahmy.countapp.Data.Util;
 import com.fahmy.countapp.R;
 import com.squareup.picasso.Picasso;
 
@@ -40,7 +41,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
     @Override
     public void onBindViewHolder(@NonNull ProductEntryAdapter.ViewHolder holder, int position) {
         ProductEntry productEntry = items.get(position);
-        holder.productTitleTv.setText(productEntry.getProductTitle());
+        holder.productTitleTv.setText(productEntry.getProductTitle() + " - " + Util.extractWeight(productEntry.getProductDescription() ) + " Kgs");
         holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());
         holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
         holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());

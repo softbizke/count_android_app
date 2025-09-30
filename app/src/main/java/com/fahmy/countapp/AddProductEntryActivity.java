@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -63,7 +65,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
     String selectedProdId = null;
     AutoCompleteTextView autoText;
     Button submitBtn;
-    EditText openingCountEt, closingCountEt;
+    EditText openingCountEt, closingCountEt, confirmOpeningCountEt, confirmClosingCountEt;
     ImageView selectImgIv;
 
     private static final int CAMERA_PERMISSION_CODE = 101;
@@ -109,6 +111,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
         submitBtn = findViewById(R.id.submitBtn);
         openingCountEt = findViewById(R.id.openingCountEt);
         closingCountEt = findViewById(R.id.closingCountEt);
+        confirmOpeningCountEt = findViewById(R.id.confirmOpeningCountEt);
+        confirmClosingCountEt = findViewById(R.id.confirmClosingCountEt);
+
+        setUpEditTextListeners();
 
 
         fetchProducts(getTokenFromPrefs());
@@ -131,8 +137,6 @@ public class AddProductEntryActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(v-> {
             String openingCount = openingCountEt.getText().toString();
             String closingCount = closingCountEt.getText().toString();
-            EditText confirmOpeningCountEt = findViewById(R.id.confirmOpeningCountEt);
-            EditText confirmClosingCountEt = findViewById(R.id.confirmClosingCountEt);
             String confirmOpeningCount = confirmOpeningCountEt.getText().toString();
             String confirmClosingCount = confirmClosingCountEt.getText().toString();
             if(selectedProdId == null || selectedProdId.isEmpty()) {
@@ -174,7 +178,65 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
     }
 
+    private void setUpEditTextListeners() {
+
+        confirmOpeningCountEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if(!s.toString().equals(openingCountEt.getText().toString())) {
+                    //show error
+                    confirmOpeningCountEt.setError("The opening count values do not match");
+
+                } else {
+                    //remove error
+                    confirmOpeningCountEt.setError(null);
+                }
+
+            }
+        });
+
+        confirmClosingCountEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if(!s.toString().equals(closingCountEt.getText().toString())) {
+                    //show error
+                    confirmClosingCountEt.setError("The closing count values do not match");
+
+                } else {
+                    //remove error
+                    confirmClosingCountEt.setError(null);
+                }
+
+            }
+        });
+
+
+    }
+
     private void fetchProducts(String jwtToken) {
+        Log.e("Fetching", "I am here");
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -185,6 +247,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e("Fetching products", e.getMessage());
                 runOnUiThread(() ->
                         Toast.makeText(AddProductEntryActivity.this, "Failed to load products", Toast.LENGTH_SHORT).show()
                 );
@@ -192,8 +255,8 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                final String respBody = response.body().string();
                 if (response.isSuccessful()) {
-                    final String respBody = response.body().string();
                     Log.i("respBody11", respBody);
 
                     try {
@@ -227,8 +290,11 @@ public class AddProductEntryActivity extends AppCompatActivity {
                         runOnUiThread(() -> setupAutoComplete(productList));
 
                     } catch (JSONException e) {
+                        Log.e("Fetching products", e.getMessage());
                         e.printStackTrace();
                     }
+                } else {
+                    Log.e("Fetching products", respBody);
                 }
             }
         });

@@ -33,6 +33,15 @@
             android:paddingHorizontal="10dp"
             android:layout_marginStart="5dp"
             >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:layout_marginBottom="5dp"
+                android:id="@+id/machineTv"
+                />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

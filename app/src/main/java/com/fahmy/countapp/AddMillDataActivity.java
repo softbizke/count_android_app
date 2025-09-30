@@ -6,11 +6,17 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -48,11 +54,13 @@ import okhttp3.Response;
 public class AddMillDataActivity extends AppCompatActivity {
 
     Button submitBtn;
-    EditText millCapacityEt, millExtractionEt;
+    EditText millCapacityEt, millExtractionEt, confirmMillCapacityEt, confirmMillExtractionEt;
     ImageView selectImgIv;
+    Spinner machineSpinner;
 
     private static final int CAMERA_PERMISSION_CODE = 102;
     private Uri photoUri;
+    private String selectedMachine;
     private ActivityResultLauncher<Uri> takePictureLauncher;
 
     @Override
@@ -90,6 +98,26 @@ public class AddMillDataActivity extends AppCompatActivity {
         submitBtn = findViewById(R.id.submitBtn);
         millCapacityEt = findViewById(R.id.millCapacityEt);
         millExtractionEt = findViewById(R.id.millExtractionEt);
+        confirmMillCapacityEt = findViewById(R.id.confirmMillCapacityEt);
+        confirmMillExtractionEt = findViewById(R.id.confirmMillExtractionEt);
+        machineSpinner = findViewById(R.id.machineSpinner);
+
+        String[] items = {"Machine A", "Machine B"};
+        selectedMachine = items[0];
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        machineSpinner.setAdapter(adapter);
+
+        machineSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedMachine = (String) parent.getItemAtPosition(position);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) { }
+        });
+
+        setUpEditTextListeners();
 
         selectImgIv.setOnClickListener(v->{
 
@@ -108,11 +136,13 @@ public class AddMillDataActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(v-> {
             String millCapacity = millCapacityEt.getText().toString();
             String millExtraction = millExtractionEt.getText().toString();
-            EditText confirmMillCapacityEt = findViewById(R.id.confirmMillCapacityEt);
-            EditText confirmMillExtractionEt = findViewById(R.id.confirmMillExtractionEt);
             String confirmMillCapacity = confirmMillCapacityEt.getText().toString();
             String confirmMillExtraction = confirmMillExtractionEt.getText().toString();
-            if(millCapacity.isEmpty()) {
+
+            if(selectedMachine.isEmpty()) {
+                Toast.makeText(this, "Please select the milling machine.", Toast.LENGTH_SHORT).show();
+                millCapacityEt.requestFocus();
+            }else if(millCapacity.isEmpty()) {
                 millCapacityEt.setError("This field is required");
                 millCapacityEt.requestFocus();
             } else if(millExtraction.isEmpty()) {
@@ -124,25 +154,94 @@ public class AddMillDataActivity extends AppCompatActivity {
             }else if(!confirmMillExtraction.equals(millExtraction)) {
                 confirmMillExtractionEt.setError("The mill extraction values do not match, please double check");
                 confirmMillExtractionEt.requestFocus();
-            } else if (photoUri == null) {
+            }  else if (photoUri == null) {
                     Toast.makeText(this, "Please capture the machine reading photo before submitting.", Toast.LENGTH_SHORT).show();
             }else  {
+
+
 
                 File imageFile = new Util().getFileFromUri(photoUri, AddMillDataActivity.this);
                 if (imageFile == null || !imageFile.exists()) {
                     Toast.makeText(this, "Something went wrong. Please capture the Image again.", Toast.LENGTH_SHORT).show();
                 } else {
-                    sendManualMillReport(
-                        millCapacity,
-                        millExtraction,
-                        getTokenFromPrefs(),
-                        imageFile
-                    );
+
+
+
+                    //validate mill extraction value is a percentage value eg 40.20, 77.21 70 etc
+                    try {
+                        double value = Double.parseDouble(millExtraction);
+                        if (value < 0 || value > 100) {
+                            millExtractionEt.setError("Enter percentage value between 0 and 100");
+                            confirmMillExtractionEt.setError("Enter value between 0 and 100");
+                            millExtractionEt.requestFocus();
+                        } else if (!millExtraction.matches("^\\d{0,3}(\\.\\d{0,2})?$")) {
+                            millExtractionEt.setError("Please enter a value with up to 2 decimal places");
+                            confirmMillExtractionEt.setError("Please enter a value with up to 2 decimal places");
+                            millExtractionEt.requestFocus();
+                        } else {
+
+                            sendManualMillReport(
+                                millCapacity,
+                                millExtraction,
+                                getTokenFromPrefs(),
+                                imageFile
+                            );
+                        }
+                    } catch (NumberFormatException e) {
+                        millExtractionEt.setError("Enter a valid number");
+                        confirmMillExtractionEt.setError("Enter a valid number");
+                        millExtractionEt.requestFocus();
+                    }
+
                 }
 
 
             }
         });
+    }
+
+
+    private void setUpEditTextListeners() {
+
+        confirmMillCapacityEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+
+                confirmMillCapacityEt.setError(!s.toString().equals(millCapacityEt.getText().toString())? "The mill capacity values do not match": null);
+
+            }
+        });
+
+        confirmMillExtractionEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                confirmMillExtractionEt.setError(!s.toString().equals(millExtractionEt.getText().toString())? "The mill extraction count values do not match": null);
+
+            }
+        });
+
+
     }
 
 
@@ -160,7 +259,8 @@ public class AddMillDataActivity extends AppCompatActivity {
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("mill_capacity", millCapacity)
-                .addFormDataPart("mill_extraction", millExtraction);
+                .addFormDataPart("mill_extraction", millExtraction)
+                .addFormDataPart("machine", selectedMachine);
 
         builder.addFormDataPart(
                 "image",                                // field name expected by Node route

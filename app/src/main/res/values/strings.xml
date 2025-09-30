@@ -32,4 +32,7 @@
     <string name="logout">Logout</string>
     <string name="capture_image">Click to Capture Machine Picture</string>
     <string name="capture_picture">Click to Capture Machine picture</string>
+    <string name="select_the_mill_machine">Select The Mill Machine</string>
+    <string name="confirm_mill_extraction">Confirm Mill Extraction</string>
+    <string name="enter_only_percentages_eg_70_25">Enter only percentages eg 70.25</string>
 </resources>

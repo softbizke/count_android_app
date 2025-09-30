@@ -38,8 +38,11 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -53,6 +56,7 @@ public class MillDataActivity extends AppCompatActivity {
     RecyclerView rv;
     MillDataAdapter adapter;
     DrawerLayout drawerLayout;
+    User user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,9 +70,7 @@ public class MillDataActivity extends AppCompatActivity {
         adapter = new MillDataAdapter(MillDataActivity.this, millReportEntryList);
         rv.setAdapter(adapter);
 
-//        checkSignedIn();
-        String token = getTokenFromPrefs();
-        fetchManualMillData(token, 1, 1000, "" );
+        checkSignedIn();
     }
 
     private void checkUserRole() {
@@ -78,6 +80,92 @@ public class MillDataActivity extends AppCompatActivity {
 
             startActivity(new Intent(MillDataActivity.this, MainActivity.class));
             finish();
+        }
+    }
+
+
+    private void checkSignedIn() {
+        String token = getTokenFromPrefs();
+
+        // If token missing → go to Login
+        if (token == null || token.isEmpty()) {
+
+            redirectToLogin();
+
+        }else {
+
+            OkHttpClient client = new OkHttpClient();
+
+            // Build request with Authorization header
+            Request request = new Request.Builder()
+                    .url(ApiBase.CURRENT.getUrl() + "/auth/signedin")
+                    .addHeader("Authorization", "Bearer " + token)
+                    .get()
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    // Network error – handle gracefully (e.g., show a Toast on UI thread)
+                    runOnUiThread(() ->
+                            Toast.makeText(MillDataActivity.this, "Network error: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        // 401 or 403 → not signed in
+                        runOnUiThread(() -> redirectToLogin());
+                        return;
+                    }
+
+
+                    String body = response.body().string();
+                    try {
+                        JSONObject json = new JSONObject(body);
+                        boolean signedIn = json.optBoolean("signedIn", false);
+                        if (!signedIn) {
+                            runOnUiThread(() -> redirectToLogin());
+                        } else {
+                            JSONObject userJson = json.optJSONObject("user");
+                            user = new User(
+                                    userJson.get("id").toString(),
+                                    userJson.get("phone").toString(),
+                                    userJson.get("role").toString()
+                            );
+                            getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().putString("user", new Gson().toJson(user)).apply();
+
+                            String token = getTokenFromPrefs();
+                            setUpUiMainFeatures();
+
+                            // Formatter for ISO 8601 in UTC
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                            sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+
+                            // Start date → today at 12:00 AM
+                            Calendar startCal = Calendar.getInstance();
+                            startCal.set(Calendar.HOUR_OF_DAY, 0);
+                            startCal.set(Calendar.MINUTE, 0);
+                            startCal.set(Calendar.SECOND, 0);
+                            startCal.set(Calendar.MILLISECOND, 0);
+                            String startDate = sdf.format(startCal.getTime());
+
+                            // End date → tomorrow at 12:00 AM
+                            Calendar endCal = (Calendar) startCal.clone();
+                            endCal.add(Calendar.DAY_OF_MONTH, 1);
+                            String endDate = sdf.format(endCal.getTime());
+
+                            fetchManualMillData(token, 1, 1000, "", startDate, endDate );
+
+                        }
+                    } catch (JSONException e) {
+                        Log.e("Signed in", e.getMessage());
+                        runOnUiThread(() -> Toast.makeText(MillDataActivity.this,
+                                "Invalid server response", Toast.LENGTH_SHORT).show());
+                    }
+                }
+            });
         }
     }
 
@@ -131,7 +219,7 @@ public class MillDataActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-    private void fetchManualMillData(String jwtToken, int page, int perPage, String search) {
+    private void fetchManualMillData(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
         OkHttpClient client = new OkHttpClient();
 
         HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/manual-mill-data")
@@ -139,6 +227,8 @@ public class MillDataActivity extends AppCompatActivity {
                 .addQueryParameter("page", String.valueOf(page))
                 .addQueryParameter("perPage", String.valueOf(perPage))
                 .addQueryParameter("search", search)
+                .addQueryParameter("startDate", startDate)
+                .addQueryParameter("endDate", endDate)
                 .build();
 
         Request request = new Request.Builder()
@@ -177,10 +267,11 @@ public class MillDataActivity extends AppCompatActivity {
                                     JSONObject obj = arr.getJSONObject(i);
 
                                     String millCapacity   = obj.optString("mill_capacity");
+                                    String machine   = obj.optString("machine");
                                     String millExtraction = obj.optString("mill_extraction");
                                     String filePath = obj.optString("photo_path", "");
 
-                                    millReportEntryList.add(new MillData(millCapacity, millExtraction, filePath));
+                                    millReportEntryList.add(new MillData(machine, millCapacity, millExtraction, filePath));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -202,6 +293,14 @@ public class MillDataActivity extends AppCompatActivity {
         });
     }
 
+
+
+    private void redirectToLogin() {
+        Intent intent = new Intent(MillDataActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
     private String getTokenFromPrefs() {
         SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         return prefs.getString("jwt_token", null);
@@ -218,5 +317,11 @@ public class MillDataActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.logout_menu, menu);
 
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkSignedIn();
     }
 }

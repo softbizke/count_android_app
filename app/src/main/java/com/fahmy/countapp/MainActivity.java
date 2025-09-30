@@ -46,8 +46,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -200,7 +203,25 @@ public class MainActivity extends AppCompatActivity {
 
                             String token = getTokenFromPrefs();
                             setUpUiMainFeatures();
-                            fetchManualProductCounts(token, 1, 1000, "" );
+
+                            // Formatter for ISO 8601 in UTC
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                            sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+
+                            // Start date → today at 12:00 AM
+                            Calendar startCal = Calendar.getInstance();
+                            startCal.set(Calendar.HOUR_OF_DAY, 0);
+                            startCal.set(Calendar.MINUTE, 0);
+                            startCal.set(Calendar.SECOND, 0);
+                            startCal.set(Calendar.MILLISECOND, 0);
+                            String startDate = sdf.format(startCal.getTime());
+
+                            // End date → tomorrow at 12:00 AM
+                            Calendar endCal = (Calendar) startCal.clone();
+                            endCal.add(Calendar.DAY_OF_MONTH, 1);
+                            String endDate = sdf.format(endCal.getTime());
+
+                            fetchManualProductCounts(token, 1, 1000, "", startDate, endDate );
 
                         }
                     } catch (JSONException e) {
@@ -214,14 +235,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void fetchManualProductCounts(String jwtToken, int page, int perPage, String search) {
+    private void fetchManualProductCounts(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
         OkHttpClient client = new OkHttpClient();
+
 
         HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl()+"/manual-products-count")
                 .newBuilder()
                 .addQueryParameter("page", String.valueOf(page))
                 .addQueryParameter("perPage", String.valueOf(perPage))
                 .addQueryParameter("search", search)
+                .addQueryParameter("startDate", startDate)
+                .addQueryParameter("endDate", endDate)
                 .build();
 
         Request request = new Request.Builder()
@@ -258,7 +282,8 @@ public class MainActivity extends AppCompatActivity {
                                 for (int i = 0; i < arr.length(); i++) {
                                     JSONObject obj = arr.getJSONObject(i);
 
-                                    String productTitle = obj.optString("product_name"); // or obj.optString("product_name") depending on API
+                                    String productTitle = obj.optString("product_name");
+                                    String productDes = obj.optString("description");
                                     String openingCount = obj.optString("opening_count");
                                     String closingCount = obj.optString("closing_count");
                                     String totalCount = obj.optString("total_count", "0");
@@ -270,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     double totalBalesLong = totalBales.doubleValue();
 
-                                    productEntriesList.add(new ProductEntry(productTitle, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong), filePath));
+                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong), filePath));
 
                                 }
                                 adapter.notifyDataSetChanged();

@@ -79,7 +79,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/openingCountEt"
             android:background="@drawable/card_bg"
             />
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/confirmOpeningCountEt"
             android:background="@drawable/card_bg"
             />
@@ -114,7 +114,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/closingCountEt"
             android:background="@drawable/card_bg"
             />
@@ -133,7 +133,7 @@
             android:layout_height="wrap_content"
             android:autofillHints="false"
             android:padding="10dp"
-            android:inputType="number"
+            android:inputType="numberPassword"
             android:id="@+id/confirmClosingCountEt"
             android:background="@drawable/card_bg"
             />
