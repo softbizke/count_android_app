@@ -103,12 +103,34 @@ public class MainActivity extends AppCompatActivity {
 
         User userDet = user!= null? user: getUserFromPrefs();
 
+
+        Menu menu = navigationView.getMenu();
+        MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
+        MenuItem binsReportItem = menu.findItem(R.id.bins_report);
+        MenuItem homeCountData = menu.findItem(R.id.nav_home);
         if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
 
-            Menu menu = navigationView.getMenu();
-            MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
             if (millDataItem != null) {
                 millDataItem.setVisible(false);
+            }
+            if (binsReportItem != null) {
+                binsReportItem.setVisible(false);
+            }
+        } else if(userDet != null && userDet.getRole().equals(UserRoles.MILLER.getValue())) {
+
+            if (homeCountData != null) {
+                homeCountData.setVisible(false);
+            }
+            if (binsReportItem != null) {
+                binsReportItem.setVisible(false);
+            }
+        } else if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {
+
+            if (millDataItem != null) {
+                millDataItem.setVisible(false);
+            }
+            if (homeCountData != null) {
+                homeCountData.setVisible(false);
             }
         }
 
@@ -119,6 +141,12 @@ public class MainActivity extends AppCompatActivity {
             if (item.getItemId() == R.id.nav_mill_data) {
                 startActivity(new Intent(MainActivity.this, MillDataActivity.class));
             }
+
+            if (item.getItemId() == R.id.bins_report) {
+                startActivity(new Intent(MainActivity.this, BinsActivity.class));
+                finish();
+            }
+
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -201,27 +229,40 @@ public class MainActivity extends AppCompatActivity {
                             );
                             getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().putString("user", new Gson().toJson(user)).apply();
 
-                            String token = getTokenFromPrefs();
-                            setUpUiMainFeatures();
 
-                            // Formatter for ISO 8601 in UTC
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-                            sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                            if(user.getRole().equals(UserRoles.MILLER.getValue())) {
 
-                            // Start date → today at 12:00 AM
-                            Calendar startCal = Calendar.getInstance();
-                            startCal.set(Calendar.HOUR_OF_DAY, 0);
-                            startCal.set(Calendar.MINUTE, 0);
-                            startCal.set(Calendar.SECOND, 0);
-                            startCal.set(Calendar.MILLISECOND, 0);
-                            String startDate = sdf.format(startCal.getTime());
+                                startActivity(new Intent(MainActivity.this, MillDataActivity.class));
+                                finish();
 
-                            // End date → tomorrow at 12:00 AM
-                            Calendar endCal = (Calendar) startCal.clone();
-                            endCal.add(Calendar.DAY_OF_MONTH, 1);
-                            String endDate = sdf.format(endCal.getTime());
+                            } else if(user.getRole().equals(UserRoles.CONTROLLER.getValue())) {
 
-                            fetchManualProductCounts(token, 1, 1000, "", startDate, endDate );
+                                startActivity(new Intent(MainActivity.this, BinsActivity.class));
+                                finish();
+                            } else {
+
+                                String token = getTokenFromPrefs();
+                                setUpUiMainFeatures();
+
+                                // Formatter for ISO 8601 in UTC
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                                sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+
+                                // Start date → today at 12:00 AM
+                                Calendar startCal = Calendar.getInstance();
+                                startCal.set(Calendar.HOUR_OF_DAY, 0);
+                                startCal.set(Calendar.MINUTE, 0);
+                                startCal.set(Calendar.SECOND, 0);
+                                startCal.set(Calendar.MILLISECOND, 0);
+                                String startDate = sdf.format(startCal.getTime());
+
+                                // End date → tomorrow at 12:00 AM
+                                Calendar endCal = (Calendar) startCal.clone();
+                                endCal.add(Calendar.DAY_OF_MONTH, 1);
+                                String endDate = sdf.format(endCal.getTime());
+
+                                fetchManualProductCounts(token, 1, 1000, "", startDate, endDate);
+                            }
 
                         }
                     } catch (JSONException e) {
@@ -351,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView addCount = bottomSheetView.findViewById(R.id.addCountData);
         TextView addMill = bottomSheetView.findViewById(R.id.addMillData);
+        TextView addBin = bottomSheetView.findViewById(R.id.addBinReport);
 
 
 
@@ -365,9 +407,26 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        addBin.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            startActivity(new Intent(MainActivity.this, AddBinsActivity.class));
+        });
+
+
         User userDet = user!= null? user: getUserFromPrefs();
 
         if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+            addMill.setVisibility(View.GONE);
+            addBin.setVisibility(View.GONE);
+        }
+
+        if(userDet != null && userDet.getRole().equals(UserRoles.MILLER.getValue())) {
+            addCount.setVisibility(View.GONE);
+            addBin.setVisibility(View.GONE);
+        }
+
+        if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {
+            addCount.setVisibility(View.GONE);
             addMill.setVisibility(View.GONE);
         }
 

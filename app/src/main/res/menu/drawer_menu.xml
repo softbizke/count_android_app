@@ -8,4 +8,8 @@
         android:id="@+id/nav_mill_data"
         android:title="@string/mill_data"
         android:icon="@drawable/outline_acupuncture_24"/>
+    <item
+        android:id="@+id/bins_report"
+        android:title="@string/bins_report"
+        android:icon="@drawable/outline_account_tree_24"/>
 </menu>

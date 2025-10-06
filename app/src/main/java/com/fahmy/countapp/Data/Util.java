@@ -2,6 +2,7 @@ package com.fahmy.countapp.Data;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.Nullable;
@@ -10,6 +11,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,5 +68,18 @@ public class Util {
             } catch (NumberFormatException ignored) {}
         }
         return 0.0; // no match or parse error
+    }
+
+
+    public static String formatDate(String isoDateString) {
+        ZonedDateTime zonedDateTime = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            zonedDateTime = ZonedDateTime.parse(isoDateString);
+
+            ZonedDateTime userDateTime = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.ENGLISH);
+            return userDateTime.format(formatter);
+        }
+        return isoDateString;
     }
 }

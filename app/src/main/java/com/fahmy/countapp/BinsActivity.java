@@ -22,11 +22,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fahmy.countapp.Adapters.BinsReportAdapter;
 import com.fahmy.countapp.Adapters.MillDataAdapter;
-import com.fahmy.countapp.Adapters.ProductEntryAdapter;
 import com.fahmy.countapp.Data.ApiBase;
+import com.fahmy.countapp.Data.BinReport;
 import com.fahmy.countapp.Data.MillData;
-import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
 import com.fahmy.countapp.Data.UserRoles;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -39,8 +39,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,43 +52,35 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MillDataActivity extends AppCompatActivity {
-    List<MillData> millReportEntryList;
+public class BinsActivity extends AppCompatActivity {
+    List<BinReport> binsReportList;
     RecyclerView rv;
-    MillDataAdapter adapter;
+    BinsReportAdapter adapter;
     DrawerLayout drawerLayout;
     User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_mill_data);
+        setContentView(R.layout.activity_bins);
+        findViewById(R.id.fab).setOnClickListener(v->{
+            showCustomOverflowMenu();
+        });
 
         setUpUiMainFeatures();
         rv = findViewById(R.id.millDataRv);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        millReportEntryList = new ArrayList<>();
-        adapter = new MillDataAdapter(MillDataActivity.this, millReportEntryList);
+        binsReportList = new ArrayList<>();
+        adapter = new BinsReportAdapter(BinsActivity.this, binsReportList);
         rv.setAdapter(adapter);
 
-        findViewById(R.id.fab).setOnClickListener(v->{
-            showCustomOverflowMenu();
-        });
 
         checkSignedIn();
 
 
     }
 
-    private void checkUserRole() {
-        User userDet = getUserFromPrefs();
-
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
-
-            startActivity(new Intent(MillDataActivity.this, MainActivity.class));
-            finish();
-        }
-    }
 
 
     private void checkSignedIn() {
@@ -117,7 +107,7 @@ public class MillDataActivity extends AppCompatActivity {
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     // Network error – handle gracefully (e.g., show a Toast on UI thread)
                     runOnUiThread(() ->
-                            Toast.makeText(MillDataActivity.this, "Network error: " + e.getMessage(),
+                            Toast.makeText(BinsActivity.this, "Network error: " + e.getMessage(),
                                     Toast.LENGTH_SHORT).show());
                 }
 
@@ -165,17 +155,116 @@ public class MillDataActivity extends AppCompatActivity {
                             endCal.add(Calendar.DAY_OF_MONTH, 1);
                             String endDate = sdf.format(endCal.getTime());
 
-                            fetchManualMillData(token, 1, 1000, "", startDate, endDate );
+                            fetchBinReportData(token, 1, 1000, "", startDate, endDate );
 
                         }
                     } catch (JSONException e) {
                         Log.e("Signed in", e.getMessage());
-                        runOnUiThread(() -> Toast.makeText(MillDataActivity.this,
+                        runOnUiThread(() -> Toast.makeText(BinsActivity.this,
                                 "Invalid server response", Toast.LENGTH_SHORT).show());
                     }
                 }
             });
         }
+    }
+
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        }
+
+        if (item.getItemId() == R.id.logout){
+            SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+            prefs
+                .edit()
+                .remove("jwt_token")
+                .apply();
+            prefs
+                .edit()
+                .remove("user")
+                .apply();
+            startActivity(new Intent(BinsActivity.this, LoginActivity.class));
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    private void fetchBinReportData(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
+        OkHttpClient client = new OkHttpClient();
+
+        HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/bins-report")
+                .newBuilder()
+                .addQueryParameter("page", String.valueOf(page))
+                .addQueryParameter("perPage", String.valueOf(perPage))
+                .addQueryParameter("search", search)
+                .addQueryParameter("startDate", startDate)
+                .addQueryParameter("endDate", endDate)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", "Bearer " + jwtToken)
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                runOnUiThread(() -> Toast.makeText(BinsActivity.this,
+                        "Failed to fetch mill data: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String respBody = response.body().string();
+                    Log.i("Bins report respBody", respBody);
+                    runOnUiThread(() -> {
+                        try {
+                            JSONObject root = new JSONObject(respBody);
+
+                            // Get the "data" object
+                            JSONObject dataObj = root.getJSONObject("data");
+
+                            // Get the array inside "data"
+                            JSONArray arr = dataObj.getJSONArray("data");
+
+                            binsReportList.clear();
+                            if(arr.length() > 0) {
+                                for (int i = 0; i < arr.length(); i++) {
+
+                                    JSONObject obj = arr.getJSONObject(i);
+
+                                    binsReportList.add(new BinReport(
+                                        obj.optInt("ring_count", 0),
+                                        obj.optString("bin_type", ""),
+                                        obj.optString("bales", ""),
+                                            obj.optString("ending_time", "")
+                                    ));
+                                }
+                                adapter.notifyDataSetChanged();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(BinsActivity.this,
+                                    "Error fetching mill data: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        Log.d("MillData", respBody);
+                    });
+                } else {
+                    runOnUiThread(() -> Toast.makeText(BinsActivity.this,
+                            "Error fetching mill data: " + response.code(),
+                            Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
 
@@ -186,8 +275,8 @@ public class MillDataActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true); // Show hamburger
-            actionBar.setHomeAsUpIndicator(R.drawable.baseline_menu_24); // Hamburger icon
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeAsUpIndicator(R.drawable.baseline_menu_24);
         }
 
 
@@ -225,126 +314,28 @@ public class MillDataActivity extends AppCompatActivity {
         }
 
 
-
         navigationView.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_home) {
-                startActivity(new Intent(MillDataActivity.this, MainActivity.class));
+                startActivity(new Intent(BinsActivity.this, MainActivity.class));
                 finish();
             }
             if (item.getItemId() == R.id.nav_mill_data) {
+                startActivity(new Intent(BinsActivity.this, MillDataActivity.class));
+                finish();
             }
 
-
             if (item.getItemId() == R.id.bins_report) {
-                startActivity(new Intent(MillDataActivity.this, BinsActivity.class));
-                finish();
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            drawerLayout.openDrawer(GravityCompat.START);
-            return true;
-        }
-
-        if (item.getItemId() == R.id.logout){
-            SharedPreferences prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-            prefs
-                .edit()
-                .remove("jwt_token")
-                .apply();
-            prefs
-                .edit()
-                .remove("user")
-                .apply();
-            startActivity(new Intent(MillDataActivity.this, LoginActivity.class));
-            finish();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    private void fetchManualMillData(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
-        OkHttpClient client = new OkHttpClient();
-
-        HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/manual-mill-data")
-                .newBuilder()
-                .addQueryParameter("page", String.valueOf(page))
-                .addQueryParameter("perPage", String.valueOf(perPage))
-                .addQueryParameter("search", search)
-                .addQueryParameter("startDate", startDate)
-                .addQueryParameter("endDate", endDate)
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Authorization", "Bearer " + jwtToken)
-                .get()
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> Toast.makeText(MillDataActivity.this,
-                        "Failed to fetch mill data: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    final String respBody = response.body().string();
-                    Log.i("mill data report respBody", respBody);
-                    runOnUiThread(() -> {
-                        try {
-                            JSONObject root = new JSONObject(respBody);
-
-                            // Get the "data" object
-                            JSONObject dataObj = root.getJSONObject("data");
-
-                            // Get the array inside "data"
-                            JSONArray arr = dataObj.getJSONArray("data");
-
-                            millReportEntryList.clear();
-                            if(arr.length() > 0) {
-                                for (int i = 0; i < arr.length(); i++) {
-
-                                    JSONObject obj = arr.getJSONObject(i);
-
-                                    String millCapacity   = obj.optString("mill_capacity");
-                                    String machine   = obj.optString("machine");
-                                    String millExtraction = obj.optString("mill_extraction");
-                                    String filePath = obj.optString("photo_path", "");
-
-                                    millReportEntryList.add(new MillData(machine, millCapacity, millExtraction, filePath));
-                                }
-                                adapter.notifyDataSetChanged();
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MillDataActivity.this,
-                                    "Error fetching mill data: " + e.getMessage(),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-                        Log.d("MillData", respBody);
-                    });
-                } else {
-                    runOnUiThread(() -> Toast.makeText(MillDataActivity.this,
-                            "Error fetching mill data: " + response.code(),
-                            Toast.LENGTH_SHORT).show());
-                }
-            }
-        });
-    }
 
 
 
     private void redirectToLogin() {
-        Intent intent = new Intent(MillDataActivity.this, LoginActivity.class);
+        Intent intent = new Intent(BinsActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -360,7 +351,6 @@ public class MillDataActivity extends AppCompatActivity {
         return userJson == null?null:new Gson().fromJson(userJson, (Type) User.class);
     }
 
-
     private void showCustomOverflowMenu() {
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_add, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
@@ -374,17 +364,17 @@ public class MillDataActivity extends AppCompatActivity {
 
         addCount.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddProductEntryActivity.class));
+            startActivity(new Intent(BinsActivity.this, AddProductEntryActivity.class));
         });
 
         addMill.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddMillDataActivity.class));
+            startActivity(new Intent(BinsActivity.this, AddMillDataActivity.class));
         });
 
         addBin.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddBinsActivity.class));
+            startActivity(new Intent(BinsActivity.this, AddBinsActivity.class));
         });
 
 
@@ -406,13 +396,6 @@ public class MillDataActivity extends AppCompatActivity {
         }
 
         bottomSheetDialog.show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.logout_menu, menu);
-
-        return true;
     }
 
     @Override

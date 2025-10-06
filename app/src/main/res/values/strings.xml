@@ -12,13 +12,13 @@
     <string name="eg_254712345678">eg. 254712345678</string>
     <string name="login_to_continue">Login To Continue</string>
     <string name="submit">Submit</string>
-    <string name="enter_your_phone_number">Enter your phone number</string>
-    <string name="enter_the_code_sent_on_your_phone">Enter the code sent on your phone</string>
+    <string name="enter_your_phone_number">Enter Your Phone Number</string>
+    <string name="enter_the_code_sent_on_your_phone">Enter The Code Sent On Your Phone</string>
     <string name="send_code">Send Code</string>
     <string name="add_product_report">Add Product Report</string>
-    <string name="enter_the_opening_tonnes">Enter the opening count</string>
-    <string name="enter_the_closing_tonnes">Enter the closing count</string>
-    <string name="start_typing_a_product">Start typing a product…</string>
+    <string name="enter_the_opening_tonnes">Enter The Opening Count</string>
+    <string name="enter_the_closing_tonnes">Enter The Closing Count</string>
+    <string name="start_typing_a_product">Start Typing A Product…</string>
     <string name="select_product">Select Product</string>
     <string name="add_mill_report">Add Mill Report</string>
     <string name="enter_the_mill_capacity">Enter The Mill Capacity</string>
@@ -30,9 +30,13 @@
     <string name="add_count_data">Add Count Data</string>
     <string name="verify_code">Verify Code</string>
     <string name="logout">Logout</string>
-    <string name="capture_image">Click to Capture Machine Picture</string>
-    <string name="capture_picture">Click to Capture Machine picture</string>
+    <string name="capture_image">Click To Capture Machine Picture</string>
+    <string name="capture_picture">Click To Capture Machine picture</string>
     <string name="select_the_mill_machine">Select The Mill Machine</string>
     <string name="confirm_mill_extraction">Confirm Mill Extraction</string>
-    <string name="enter_only_percentages_eg_70_25">Enter only percentages eg 70.25</string>
+    <string name="enter_only_percentages_eg_70_25">Enter Only Percentages eg 70.25</string>
+    <string name="select_the_bin_type">Select The Bin Type</string>
+    <string name="select_the_ring_type">Select The Ring Count</string>
+    <string name="add_bin_report">Add Bin Report</string>
+    <string name="bins_report">Bins Report</string>
 </resources>

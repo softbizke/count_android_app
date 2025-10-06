@@ -5,14 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:background="@color/white"
     android:layout_height="match_parent"
-    tools:context=".MillDataActivity">
+    android:background="@color/white"
+    tools:context=".BinsActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:fitsSystemWindows="true"
         android:layout_height="match_parent">
+
 
 
         <RelativeLayout
@@ -52,6 +53,5 @@
         android:layout_gravity="start"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"/>
-
 
 </androidx.drawerlayout.widget.DrawerLayout>
