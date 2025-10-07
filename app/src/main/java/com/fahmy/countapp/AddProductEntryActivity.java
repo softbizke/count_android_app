@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -325,6 +326,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
             File imageFile
     ) {
 
+
+
+        AlertDialog progressDialog = Util.showDialog(AddProductEntryActivity.this, "Submitting data...", R.color.blue);
+        runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
 
         MultipartBody.Builder builder = new MultipartBody.Builder()
@@ -335,12 +340,12 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
         if (imageFile != null && imageFile.exists()) {
             builder.addFormDataPart(
-                    "image",                                // field name in Node route
-                    imageFile.getName(),                    // file name to send
-                    RequestBody.create(
-                            imageFile,
-                            MediaType.parse("image/*")       // let server accept any image type
-                    )
+                "image",                                // field name in Node route
+                imageFile.getName(),                    // file name to send
+                RequestBody.create(
+                        imageFile,
+                        MediaType.parse("image/*")       // let server accept any image type
+                )
             );
         }
 
@@ -355,13 +360,15 @@ public class AddProductEntryActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                AddProductEntryActivity.this,
-                                "Network error: " + e.getMessage(),
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            AddProductEntryActivity.this,
+                            "Network error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Util.hideDialog(progressDialog);
+                });
             }
 
             @Override
@@ -370,6 +377,8 @@ public class AddProductEntryActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Log.i("Product Entry", resBody);
                     runOnUiThread(() -> {
+
+                        Util.hideDialog(progressDialog);
                         Toast.makeText(
                                 AddProductEntryActivity.this,
                                 "Data added successfully",
@@ -379,13 +388,15 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     });
                 } else {
                     Log.e("Error inserting manual prod data", resBody);
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    AddProductEntryActivity.this,
-                                    "Server error: " + resBody,
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                    runOnUiThread(() -> {
+
+                        Util.hideDialog(progressDialog);
+                        Toast.makeText(
+                                AddProductEntryActivity.this,
+                                "Server error: " + resBody,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
                 }
             }
         });

@@ -39,4 +39,5 @@
     <string name="select_the_ring_type">Select The Ring Count</string>
     <string name="add_bin_report">Add Bin Report</string>
     <string name="bins_report">Bins Report</string>
+    <string name="loading">Loading...</string>
 </resources>

@@ -18,6 +18,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -144,6 +145,8 @@ public class AddBinsActivity extends AppCompatActivity {
     ) {
 
 
+        AlertDialog progressDialog = Util.showDialog(AddBinsActivity.this, "Submitting data...", R.color.blue);
+        runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         JSONObject json = new JSONObject();
@@ -153,6 +156,8 @@ public class AddBinsActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Json error", e.getMessage());
+            runOnUiThread(() -> Util.hideDialog(progressDialog));
+
         }
 
         RequestBody requestBody = RequestBody.create(json.toString(), JSON);
@@ -169,13 +174,15 @@ public class AddBinsActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e("OnFailure Bin Report", e.getMessage());
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                AddBinsActivity.this,
-                                "Network error: " + e.getMessage(),
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            AddBinsActivity.this,
+                            "Network error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Util.hideDialog(progressDialog);
+                });
             }
 
             @Override
@@ -184,21 +191,26 @@ public class AddBinsActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Log.i("Bin Report Entry", resBody);
                     runOnUiThread(() -> {
+
+                        Util.hideDialog(progressDialog);
                         Toast.makeText(AddBinsActivity.this,
                                 "Data added successfully",
                                 Toast.LENGTH_SHORT
                         ).show();
-                        startActivity(new Intent(AddBinsActivity.this, MillDataActivity.class));
+
+//                        startActivity(new Intent(AddBinsActivity.this, MillDataActivity.class));
                         finish();
                     });
                 } else {
                     Log.e("ServerError Bin Report Entry", resBody);
-                    runOnUiThread(() ->
-                            Toast.makeText(AddBinsActivity.this,
-                                    "Server error: " + response.code(),
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                    runOnUiThread(() -> {
+                        Toast.makeText(AddBinsActivity.this,
+                                "Server error: " + response.code(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Util.hideDialog(progressDialog);
+                    });
                 }
             }
         });

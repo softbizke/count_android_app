@@ -25,6 +25,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -253,6 +254,9 @@ public class AddMillDataActivity extends AppCompatActivity {
     ) {
 
 
+
+        AlertDialog progressDialog = Util.showDialog(AddMillDataActivity.this, "Submitting data...", R.color.blue);
+        runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
 
         // --- Build multipart body ---
@@ -282,13 +286,15 @@ public class AddMillDataActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 Log.e("OnFailure Mill Report Entry", e.getMessage());
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                AddMillDataActivity.this,
-                                "Network error: " + e.getMessage(),
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            AddMillDataActivity.this,
+                            "Network error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    Util.hideDialog(progressDialog);
+                });
             }
 
             @Override
@@ -297,6 +303,8 @@ public class AddMillDataActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     Log.i("Mill Report Entry", resBody);
                     runOnUiThread(() -> {
+
+                        Util.hideDialog(progressDialog);
                         Toast.makeText(AddMillDataActivity.this,
                                 "Data added successfully",
                                 Toast.LENGTH_SHORT
@@ -306,12 +314,14 @@ public class AddMillDataActivity extends AppCompatActivity {
                     });
                 } else {
                     Log.e("ServerError Mill Report Entry", resBody);
-                    runOnUiThread(() ->
-                            Toast.makeText(AddMillDataActivity.this,
-                                    "Server error: " + response.code(),
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                    runOnUiThread(() -> {
+                        Toast.makeText(AddMillDataActivity.this,
+                                "Server error: " + response.code(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        Util.hideDialog(progressDialog);
+                    });
                 }
             }
         });

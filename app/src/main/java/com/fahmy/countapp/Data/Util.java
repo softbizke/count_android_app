@@ -3,9 +3,17 @@ package com.fahmy.countapp.Data;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+
+import com.fahmy.countapp.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,4 +90,43 @@ public class Util {
         }
         return isoDateString;
     }
+
+
+
+
+    public static AlertDialog showDialog(Context context, String message, int colorResId) {
+        AlertDialog progressDialog;
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = inflater.inflate(R.layout.dialog_progress, null);
+        builder.setView(view);
+        builder.setCancelable(false);
+
+        TextView tvMessage = view.findViewById(R.id.tvMessage);
+        ProgressBar progressBar = view.findViewById(R.id.progressBar);
+
+        tvMessage.setText(message);
+
+        // Change color if provided
+        if (colorResId != 0) {
+            progressBar.getIndeterminateDrawable().setColorFilter(
+                    ContextCompat.getColor(context, colorResId),
+                    android.graphics.PorterDuff.Mode.SRC_IN
+            );
+        }
+
+        progressDialog = builder.create();
+        if (progressDialog.getWindow() != null) {
+            progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        return progressDialog;
+    }
+
+    public static void hideDialog(AlertDialog progressDialog) {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
 }

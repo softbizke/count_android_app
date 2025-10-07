@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -29,6 +30,7 @@ import com.fahmy.countapp.Data.BinReport;
 import com.fahmy.countapp.Data.MillData;
 import com.fahmy.countapp.Data.User;
 import com.fahmy.countapp.Data.UserRoles;
+import com.fahmy.countapp.Data.Util;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
@@ -169,7 +171,12 @@ public class BinsActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.logout_menu, menu);
 
+        return true;
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -194,6 +201,14 @@ public class BinsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
     private void fetchBinReportData(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
+
+        final AlertDialog[] progressDialog = new AlertDialog[1];
+
+        runOnUiThread(() -> {
+            progressDialog[0] = Util.showDialog(BinsActivity.this, "Fetching today's data...", R.color.blue);
+            progressDialog[0].show();
+        });
+        
         OkHttpClient client = new OkHttpClient();
 
         HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/bins-report")
@@ -214,9 +229,13 @@ public class BinsActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> Toast.makeText(BinsActivity.this,
-                        "Failed to fetch mill data: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+
+                    Util.hideDialog(progressDialog[0]);
+                    Toast.makeText(BinsActivity.this,
+                            "Failed to fetch mill data: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -249,7 +268,13 @@ public class BinsActivity extends AppCompatActivity {
                                 }
                                 adapter.notifyDataSetChanged();
                             }
+
+                            Util.hideDialog(progressDialog[0]);
+
+
                         } catch (JSONException e) {
+
+                            Util.hideDialog(progressDialog[0]);
                             e.printStackTrace();
                             Toast.makeText(BinsActivity.this,
                                     "Error fetching mill data: " + e.getMessage(),
@@ -259,9 +284,13 @@ public class BinsActivity extends AppCompatActivity {
                         Log.d("MillData", respBody);
                     });
                 } else {
-                    runOnUiThread(() -> Toast.makeText(BinsActivity.this,
-                            "Error fetching mill data: " + response.code(),
-                            Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> {
+
+                        Util.hideDialog(progressDialog[0]);
+                        Toast.makeText(BinsActivity.this,
+                                "Error fetching mill data: " + response.code(),
+                                Toast.LENGTH_SHORT).show();
+                    });
                 }
             }
         });
@@ -402,5 +431,6 @@ public class BinsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkSignedIn();
+
     }
 }

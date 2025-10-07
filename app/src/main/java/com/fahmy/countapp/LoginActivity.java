@@ -9,12 +9,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.fahmy.countapp.Data.ApiBase;
+import com.fahmy.countapp.Data.Util;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -62,6 +64,8 @@ public class LoginActivity extends AppCompatActivity {
                 codeEt.requestFocus();
             } else {
 
+                AlertDialog progressDialog = Util.showDialog(LoginActivity.this, "  Signing you in...", R.color.blue);
+                runOnUiThread(progressDialog::show);
                 JSONObject json = new JSONObject();
                 try {
                     json.put("phone_no", phone);
@@ -74,6 +78,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     Toast.makeText(LoginActivity.this, "Login error: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
+
+                    runOnUiThread(() -> Util.hideDialog(progressDialog));
                     return;
                 }
 
@@ -95,11 +101,13 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NotNull Call call, @NotNull IOException e) {
                         Log.e("onFailure", e.getMessage());
-                        runOnUiThread(() ->
+                        runOnUiThread(() ->{
                                 Toast.makeText(LoginActivity.this,
                                         "Request failed: " + e.getMessage(),
-                                        Toast.LENGTH_LONG).show()
-                        );
+                                        Toast.LENGTH_LONG).show();
+
+                            Util.hideDialog(progressDialog);
+                        });
                     }
 
                     @Override
@@ -118,9 +126,13 @@ public class LoginActivity extends AppCompatActivity {
                                         getSharedPreferences("MyPrefs", MODE_PRIVATE).edit().putString("jwt_token", token).apply();
 
                                     } catch (JSONException e) {
+
+                                        Util.hideDialog(progressDialog);
                                         throw new RuntimeException(e);
                                     }
 
+
+                                    Util.hideDialog(progressDialog);
                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
@@ -130,11 +142,14 @@ public class LoginActivity extends AppCompatActivity {
                                     codeTv.setVisibility(TextView.VISIBLE);
                                     submitBtn.setText(R.string.verify_code);
 
+                                    Util.hideDialog(progressDialog);
                                     Toast.makeText(LoginActivity.this,
                                             resp,
                                             Toast.LENGTH_LONG).show();
                                 }
                             } else {
+
+                                Util.hideDialog(progressDialog);
                                 Toast.makeText(LoginActivity.this,
                                         "Error: " + resp,
                                         Toast.LENGTH_LONG).show();

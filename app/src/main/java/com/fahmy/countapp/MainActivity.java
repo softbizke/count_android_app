@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
@@ -31,6 +32,7 @@ import com.fahmy.countapp.Data.Product;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
 import com.fahmy.countapp.Data.UserRoles;
+import com.fahmy.countapp.Data.Util;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
@@ -152,6 +154,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.logout_menu, menu);
+
+        return true;
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -277,9 +285,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void fetchManualProductCounts(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
+
+        final AlertDialog[] progressDialog = new AlertDialog[1];
+
+        runOnUiThread(() -> {
+            progressDialog[0] = Util.showDialog(MainActivity.this, "Fetching today's data...", R.color.blue);
+            progressDialog[0].show();
+        });
+
         OkHttpClient client = new OkHttpClient();
-
-
         HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl()+"/manual-products-count")
                 .newBuilder()
                 .addQueryParameter("page", String.valueOf(page))
@@ -298,9 +312,12 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                        "Failed to fetch product counts: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> {
+                    Util.hideDialog(progressDialog[0]);
+                    Toast.makeText(MainActivity.this,
+                            "Failed to fetch product counts: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -311,11 +328,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
                         try {
                             JSONObject root = new JSONObject(respBody);
-
-                            // Get the "data" object
                             JSONObject dataObj = root.getJSONObject("data");
-
-                            // Get the array inside "data"
                             JSONArray arr = dataObj.getJSONArray("data");
 
                             productEntriesList.clear();
@@ -334,14 +347,15 @@ public class MainActivity extends AppCompatActivity {
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
-                                    double totalBalesLong = totalBales.doubleValue();
-
-                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBalesLong), filePath));
-
+                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBales.doubleValue()), filePath));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
+
+                            Util.hideDialog(progressDialog[0]);
+
                         } catch (JSONException e) {
+                            Util.hideDialog(progressDialog[0]);
                             e.printStackTrace();
                             Toast.makeText(MainActivity.this,
                                     "Error fetching product counts: " + e.getMessage(),
@@ -350,15 +364,17 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("ProductCounts", respBody);
                     });
                 } else {
+                    runOnUiThread(() -> {
+                        Util.hideDialog(progressDialog[0]);
+                        Toast.makeText(MainActivity.this,
+                                "Error fetching product counts: " + response.code(),
+                                Toast.LENGTH_SHORT).show();
+                    });
                     Log.e("Error ProductCounts ", respBody);
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                            "Error fetching product counts: " + response.code(),
-                            Toast.LENGTH_SHORT).show());
                 }
             }
         });
     }
-
 
 
     private void redirectToLogin() {
@@ -378,12 +394,7 @@ public class MainActivity extends AppCompatActivity {
         return userJson == null?null:new Gson().fromJson(userJson, (Type) User.class);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.logout_menu, menu);
 
-        return true;
-    }
 
     private void showCustomOverflowMenu() {
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_add, null);
