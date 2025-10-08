@@ -19,6 +19,7 @@ import com.fahmy.countapp.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapter.ViewHolder>{
 
@@ -48,7 +49,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
         holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
 
 
-        if(productEntry.getComments().isEmpty()) {
+        if(productEntry.getComments().isEmpty() || productEntry.getComments() == null || Objects.equals(productEntry.getComments(), "null")) {
             holder.commentsTv.setVisibility(View.GONE);
         }else {
             holder.commentsTv.setVisibility(View.VISIBLE);

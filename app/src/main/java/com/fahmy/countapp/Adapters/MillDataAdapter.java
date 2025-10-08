@@ -17,6 +17,7 @@ import com.fahmy.countapp.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Objects;
 
 public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHolder>{
 
@@ -52,7 +53,7 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
                 .into(holder.photoIv);
         }
 
-        if(millData.getComments().isEmpty()) {
+        if(millData.getComments().isEmpty() || millData.getComments() == null || Objects.equals(millData.getComments(), "null")) {
             holder.commentsTv.setVisibility(View.GONE);
         }else {
             holder.commentsTv.setVisibility(View.VISIBLE);

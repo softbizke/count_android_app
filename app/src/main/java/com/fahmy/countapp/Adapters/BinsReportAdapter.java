@@ -18,6 +18,7 @@ import com.fahmy.countapp.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Objects;
 
 public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.ViewHolder>{
 
@@ -44,7 +45,7 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
         holder.binTypeTv.setText( binReport.getBinType());
         holder.endingTimeTv.setText(Util.formatDate(binReport.getEndingTime()));
         holder.totalBalesTv.setText("Bales: " + binReport.getTotalBales());
-        if(binReport.getComments().isEmpty()) {
+        if(binReport.getComments().isEmpty() || binReport.getComments() == null || Objects.equals(binReport.getComments(), "null")) {
             holder.commentsTv.setVisibility(View.GONE);
         }else {
             holder.commentsTv.setVisibility(View.VISIBLE);
