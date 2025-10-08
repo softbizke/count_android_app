@@ -68,6 +68,11 @@ public class MillDataActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_mill_data);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Mill Data Report");
+        }
+
         setUpUiMainFeatures();
         rv = findViewById(R.id.millDataRv);
         rv.setLayoutManager(new LinearLayoutManager(this));

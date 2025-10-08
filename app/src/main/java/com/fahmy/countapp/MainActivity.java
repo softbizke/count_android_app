@@ -75,6 +75,11 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Manual Products Report");
+        }
+
         findViewById(R.id.fab).setOnClickListener(v->{
 //            startActivity(new Intent(MainActivity.this, AddProductEntryActivity.class));
             showCustomOverflowMenu();

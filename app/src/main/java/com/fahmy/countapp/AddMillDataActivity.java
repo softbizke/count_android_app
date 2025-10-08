@@ -75,6 +75,7 @@ public class AddMillDataActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24);
+            actionBar.setTitle(R.string.add_mill_data);
         }
 
         selectImgIv = findViewById(R.id.selectImgIv);

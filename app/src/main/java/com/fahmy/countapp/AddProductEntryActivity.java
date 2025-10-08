@@ -84,6 +84,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24);
+            actionBar.setTitle(R.string.add_product_report);
         }
 
 

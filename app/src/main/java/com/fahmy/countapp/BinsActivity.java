@@ -77,6 +77,10 @@ public class BinsActivity extends AppCompatActivity {
         adapter = new BinsReportAdapter(BinsActivity.this, binsReportList);
         rv.setAdapter(adapter);
 
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle("Bins Report");
+        }
 
         checkSignedIn();
 
