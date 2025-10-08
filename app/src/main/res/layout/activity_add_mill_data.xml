@@ -82,7 +82,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm Mill Capacity"
+            android:text="@string/confirm_mill_capacity"
             android:textSize="17sp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="10dp"
@@ -139,6 +139,30 @@
             android:id="@+id/confirmMillExtractionEt"
             android:background="@drawable/card_bg"
             />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/enter_comments"
+            android:textSize="17sp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp"
+            />
+
+        <EditText
+            android:id="@+id/commentsET"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card_bg"
+            android:inputType="textMultiLine"
+            android:gravity="top|start"
+            android:scrollbars="vertical"
+            android:lines="5"
+            android:minLines="4"
+            android:maxLines="10"
+            android:overScrollMode="always"
+            android:scrollHorizontally="false"/>
 
 
         <Button

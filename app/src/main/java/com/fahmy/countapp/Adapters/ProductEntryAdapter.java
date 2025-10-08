@@ -47,7 +47,15 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
         holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
         holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
 
-        Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
+
+        if(productEntry.getComments().isEmpty()) {
+            holder.commentsTv.setVisibility(View.GONE);
+        }else {
+            holder.commentsTv.setVisibility(View.VISIBLE);
+            holder.commentsTv.setText(productEntry.getComments());
+        }
+
+//        Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
         if(!productEntry.getPhoto_path().isEmpty()) {
 
             Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
@@ -65,7 +73,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView productTitleTv, openingCountTv, closingCountTv, totalCountTv, totalBalesTv;
+        TextView productTitleTv, openingCountTv, closingCountTv, totalCountTv, totalBalesTv, commentsTv;
         ImageView photoIv;
 
         public ViewHolder(View view) {
@@ -76,6 +84,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
             totalCountTv = view.findViewById(R.id.totalCountTv);
             totalBalesTv = view.findViewById(R.id.totalBalesTv);
             photoIv = view.findViewById(R.id.photoIv);
+            commentsTv = view.findViewById(R.id.commentsTv);
         }
     }
 }

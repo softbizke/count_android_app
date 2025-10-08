@@ -164,10 +164,15 @@ public class AddProductEntryActivity extends AppCompatActivity {
                 if (imageFile == null || !imageFile.exists()) {
                     Toast.makeText(this, "Something went wrong. Please capture the Image again.", Toast.LENGTH_SHORT).show();
                 } else {
+
+
+                    EditText commentsET = findViewById(R.id.commentsET);
+                    String comments = commentsET.getText().toString();
                     sendManualProductCount(
                         selectedProdId,
                         Long.parseLong(openingCount),
                         Long.parseLong(closingCount),
+                        comments,
                         getTokenFromPrefs(),
                         imageFile
                     );
@@ -322,6 +327,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
             String productId,
             long openingCount,
             long closingCount,
+            String comments,
             String jwtToken,
             File imageFile
     ) {
@@ -337,6 +343,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
                 .addFormDataPart("product_id", productId)
                 .addFormDataPart("opening_count", String.valueOf(openingCount))
                 .addFormDataPart("closing_count", String.valueOf(closingCount));
+
+        if (!comments.isEmpty()) {
+            builder.addFormDataPart("comments", comments);
+        }
 
         if (imageFile != null && imageFile.exists()) {
             builder.addFormDataPart(

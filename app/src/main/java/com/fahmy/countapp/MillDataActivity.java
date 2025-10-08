@@ -338,8 +338,9 @@ public class MillDataActivity extends AppCompatActivity {
                                     String machine   = obj.optString("machine");
                                     String millExtraction = obj.optString("mill_extraction");
                                     String filePath = obj.optString("photo_path", "");
+                                    String comments = obj.optString("comments", "");
 
-                                    millReportEntryList.add(new MillData(machine, millCapacity, millExtraction, filePath));
+                                    millReportEntryList.add(new MillData(machine, millCapacity, millExtraction, filePath, comments));
                                 }
                                 adapter.notifyDataSetChanged();
                             }

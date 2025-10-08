@@ -52,6 +52,13 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
                 .into(holder.photoIv);
         }
 
+        if(millData.getComments().isEmpty()) {
+            holder.commentsTv.setVisibility(View.GONE);
+        }else {
+            holder.commentsTv.setVisibility(View.VISIBLE);
+            holder.commentsTv.setText(millData.getComments());
+        }
+
     }
 
     @Override
@@ -59,7 +66,7 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
         return items.size();
     }
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView millCapacityTv, millExtractionTv, machineTv;
+        TextView millCapacityTv, millExtractionTv, machineTv, commentsTv;
         ImageView photoIv;
 
         public ViewHolder(View view) {
@@ -68,6 +75,7 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
             millCapacityTv = view.findViewById(R.id.millCapacityTv);
             millExtractionTv = view.findViewById(R.id.millExtractionTv);
             photoIv = view.findViewById(R.id.photoIv);
+            commentsTv = view.findViewById(R.id.commentsTv);
         }
     }
 }

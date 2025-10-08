@@ -263,7 +263,8 @@ public class BinsActivity extends AppCompatActivity {
                                         obj.optInt("ring_count", 0),
                                         obj.optString("bin_type", ""),
                                         obj.optString("bales", ""),
-                                            obj.optString("ending_time", "")
+                                        obj.optString("ending_time", ""),
+                                        obj.optString("comments", "")
                                     ));
                                 }
                                 adapter.notifyDataSetChanged();

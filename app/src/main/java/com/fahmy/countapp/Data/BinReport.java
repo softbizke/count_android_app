@@ -2,13 +2,14 @@ package com.fahmy.countapp.Data;
 
 public class BinReport {
     private int ringCount;
-    private String binType, endingTime, totalBales;
+    private String binType, endingTime, totalBales, comments;
 
-    public BinReport(int ringCount, String binType, String totalBales, String endingTime) {
+    public BinReport(int ringCount, String binType, String totalBales, String endingTime, String comments) {
         this.ringCount = ringCount;
         this.binType = binType;
         this.totalBales = totalBales;
         this.endingTime = endingTime;
+        this.comments = comments;
     }
 
     public int getRingCount() {
@@ -41,5 +42,13 @@ public class BinReport {
 
     public void setEndingTime(String endingTime) {
         this.endingTime = endingTime;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 }

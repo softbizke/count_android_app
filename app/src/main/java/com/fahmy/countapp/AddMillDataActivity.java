@@ -181,9 +181,13 @@ public class AddMillDataActivity extends AppCompatActivity {
                             millExtractionEt.requestFocus();
                         } else {
 
+
+                            EditText commentsET = findViewById(R.id.commentsET);
+                            String comments = commentsET.getText().toString();
                             sendManualMillReport(
                                 millCapacity,
                                 millExtraction,
+                                comments,
                                 getTokenFromPrefs(),
                                 imageFile
                             );
@@ -249,6 +253,7 @@ public class AddMillDataActivity extends AppCompatActivity {
     private void sendManualMillReport(
         String millCapacity,
         String millExtraction,
+        String comments,
         String jwtToken,
         File imageFile
     ) {
@@ -265,6 +270,10 @@ public class AddMillDataActivity extends AppCompatActivity {
                 .addFormDataPart("mill_capacity", millCapacity)
                 .addFormDataPart("mill_extraction", millExtraction)
                 .addFormDataPart("machine", selectedMachine);
+
+        if (!comments.isEmpty()) {
+            builder.addFormDataPart("comments", comments);
+        }
 
         builder.addFormDataPart(
                 "image",                                // field name expected by Node route

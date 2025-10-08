@@ -118,11 +118,12 @@ public class AddBinsActivity extends AppCompatActivity {
                 binTypeSpinner.requestFocus();
             }else  {
 
-
-
+                EditText commentsET = findViewById(R.id.commentsET);
+                String comments = commentsET.getText().toString();
                 sendManualMillReport(
                     selectedBinType,
                     selectedRingCount,
+                    comments,
                     getTokenFromPrefs()
                 );
 
@@ -141,6 +142,7 @@ public class AddBinsActivity extends AppCompatActivity {
     private void sendManualMillReport(
         String binType,
         String ringCount,
+        String comments,
         String jwtToken
     ) {
 
@@ -153,6 +155,10 @@ public class AddBinsActivity extends AppCompatActivity {
         try {
             json.put("bin_type", binType);
             json.put("ring_count", ringCount);
+            if (!comments.isEmpty()) {
+
+                json.put("comments", comments);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Json error", e.getMessage());

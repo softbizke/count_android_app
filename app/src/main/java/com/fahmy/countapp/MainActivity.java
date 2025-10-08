@@ -343,11 +343,12 @@ public class MainActivity extends AppCompatActivity {
                                     String totalCount = obj.optString("total_count", "0");
                                     String totalBalesStr = obj.optString("total_bales", "0");
                                     String filePath = obj.optString("photo_path", "");
+                                    String comments = obj.optString("comments", "");
 
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
-                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBales.doubleValue()), filePath));
+                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBales.doubleValue()), filePath, comments));
                                 }
                                 adapter.notifyDataSetChanged();
                             }

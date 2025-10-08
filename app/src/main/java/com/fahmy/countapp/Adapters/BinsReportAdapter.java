@@ -44,6 +44,12 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
         holder.binTypeTv.setText( binReport.getBinType());
         holder.endingTimeTv.setText(Util.formatDate(binReport.getEndingTime()));
         holder.totalBalesTv.setText("Bales: " + binReport.getTotalBales());
+        if(binReport.getComments().isEmpty()) {
+            holder.commentsTv.setVisibility(View.GONE);
+        }else {
+            holder.commentsTv.setVisibility(View.VISIBLE);
+            holder.commentsTv.setText(binReport.getComments());
+        }
 
 
     }
@@ -53,7 +59,7 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
         return items.size();
     }
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView binTypeTv, ringCountTv, endingTimeTv, totalBalesTv;
+        TextView binTypeTv, ringCountTv, endingTimeTv, totalBalesTv, commentsTv;
         ImageView photoIv;
 
         public ViewHolder(View view) {
@@ -63,6 +69,7 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
             endingTimeTv = view.findViewById(R.id.endingTimeTv);
             totalBalesTv = view.findViewById(R.id.totalBalesTv);
             photoIv = view.findViewById(R.id.photoIv);
+            commentsTv = view.findViewById(R.id.commentsTv);
         }
     }
 }
