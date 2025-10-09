@@ -58,7 +58,9 @@ public class AddBinsActivity extends AppCompatActivity {
     Button submitBtn;
 
     private LinearLayout binsContainer;
-    private List<EditText> ringInputs = new ArrayList<>();
+    private List<Spinner> ringInputs = new ArrayList<>();
+
+    private final int totalRings = 13;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +94,11 @@ public class AddBinsActivity extends AppCompatActivity {
 
             // Validate and build JSON array
             for (int i = 0; i < ringInputs.size(); i++) {
-                EditText ringInput = ringInputs.get(i);
-                String ringValue = ringInput.getText().toString().trim();
+                Spinner ringInput = ringInputs.get(i);
+                String ringValue = ringInput.getSelectedItem().toString().trim();
 
                 if (ringValue.isEmpty()) {
-                    ringInput.setError("Please enter a value for Bin " + (i + 1));
+                    Toast.makeText(this, "Please select a value for Bin " + (i + 1), Toast.LENGTH_SHORT).show();
                     ringInput.requestFocus();
                     return;
                 }
@@ -104,7 +106,7 @@ public class AddBinsActivity extends AppCompatActivity {
                 try {
                     JSONObject binObject = new JSONObject();
                     binObject.put("bin_type", "Bin " + (i + 1));
-                    binObject.put("ring_count", ringValue);
+                    binObject.put("ring_count", String.valueOf(parseRingValue(ringValue)));
                     if (!comments.isEmpty()) {
                         binObject.put("comments", comments);
                     }
@@ -150,19 +152,44 @@ public class AddBinsActivity extends AppCompatActivity {
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1
         ));
 
-        EditText ringInput = new EditText(this);
-        ringInput.setHint("Enter ring value");
-        ringInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        ringInput.setBackgroundResource(R.drawable.card_bg);
-        ringInput.setLayoutParams(new LinearLayout.LayoutParams(
+        // Spinner for ring values (0–13)
+        Spinner ringSpinner = new Spinner(this);
+        ringSpinner.setBackgroundResource(R.drawable.card_bg);
+        ringSpinner.setLayoutParams(new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 3
         ));
 
+        // Prepare spinner values
+        List<String> ringValues = new ArrayList<>();
+        for (int i = 0; i <= totalRings; i++) {
+            if (i == 0) {
+                ringValues.add("Nil");
+            } else if (i == totalRings) {
+                ringValues.add("Full");
+            } else {
+                ringValues.add(String.valueOf(i));
+            }
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                ringValues
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ringSpinner.setAdapter(adapter);
+
+        // Add both to row
         rowLayout.addView(binLabel);
-        rowLayout.addView(ringInput);
+        rowLayout.addView(ringSpinner);
+
+        // Add row to container
         binsContainer.addView(rowLayout);
-        ringInputs.add(ringInput);
+
+        // Keep reference for submission (if you previously used EditText list)
+        ringInputs.add(ringSpinner);
     }
+
 
 
     private void sendManualMillReport(
@@ -249,6 +276,26 @@ public class AddBinsActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private int parseRingValue(String value) {
+        if (value == null) return 0;
+
+        value = value.trim();
+
+        if (value.equalsIgnoreCase("Nil")) {
+            return 0;
+        } else if (value.equalsIgnoreCase("Full")) {
+            return 13;
+        } else {
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                return 0; // fallback if something unexpected
+            }
+        }
+    }
+
 
 
 }
