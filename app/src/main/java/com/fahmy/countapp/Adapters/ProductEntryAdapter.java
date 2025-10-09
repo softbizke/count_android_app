@@ -43,10 +43,19 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
     public void onBindViewHolder(@NonNull ProductEntryAdapter.ViewHolder holder, int position) {
         ProductEntry productEntry = items.get(position);
         holder.productTitleTv.setText(productEntry.getProductTitle() + " - " + Util.extractWeight(productEntry.getProductDescription() ) + " Kgs");
-        holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());
-        holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
-        holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
-        holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
+        if(productEntry.getBags().isEmpty()) {
+            holder.openingCountTv.setVisibility(View.VISIBLE);
+            holder.closingCountTv.setVisibility(View.VISIBLE);
+            holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());
+            holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
+            holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
+            holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
+        } else {
+            holder.totalCountTv.setText("Bags: " + productEntry.getBags());
+            holder.totalBalesTv.setText(productEntry.getTotalKgs()+" Kgs");
+            holder.openingCountTv.setVisibility(View.GONE);
+            holder.closingCountTv.setVisibility(View.GONE);
+        }
 
 
         if(productEntry.getComments().isEmpty() || productEntry.getComments() == null || Objects.equals(productEntry.getComments(), "null")) {

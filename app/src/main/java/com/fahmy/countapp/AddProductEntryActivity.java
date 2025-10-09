@@ -1,6 +1,7 @@
 package com.fahmy.countapp;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -39,7 +40,10 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.Product;
+import com.fahmy.countapp.Data.User;
+import com.fahmy.countapp.Data.UserRoles;
 import com.fahmy.countapp.Data.Util;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,12 +70,14 @@ public class AddProductEntryActivity extends AppCompatActivity {
     String selectedProdId = null;
     AutoCompleteTextView autoText;
     Button submitBtn;
-    EditText openingCountEt, closingCountEt, confirmOpeningCountEt, confirmClosingCountEt;
+    EditText openingCountEt, closingCountEt, confirmOpeningCountEt, confirmClosingCountEt, totalBagsEt, confirmTotalBagsEt;
     ImageView selectImgIv;
 
     private static final int CAMERA_PERMISSION_CODE = 101;
     private Uri photoUri;
     private ActivityResultLauncher<Uri> takePictureLauncher;
+
+    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +94,14 @@ public class AddProductEntryActivity extends AppCompatActivity {
         }
 
 
+        String jsonUser = getSharedPreferences("MyPrefs", MODE_PRIVATE).getString("user", null);
+        if(jsonUser != null) {
+
+            user = new Gson().fromJson(jsonUser, User.class);
+        } else {
+            startActivity(new Intent(AddProductEntryActivity.this, LoginActivity.class));
+            finish();
+        }
         selectImgIv = findViewById(R.id.selectImgIv);
 
         takePictureLauncher = registerForActivityResult(
@@ -109,12 +123,27 @@ public class AddProductEntryActivity extends AppCompatActivity {
         );
 
 
+
         autoText = findViewById(R.id.productsAutoText);
         submitBtn = findViewById(R.id.submitBtn);
+
+        if (user.getRole().equals(UserRoles.OPERATOR.getValue())) {
+
+            findViewById(R.id.openingClosingContainer).setVisibility(View.VISIBLE);
+            findViewById(R.id.branPollardContainer).setVisibility(View.GONE);
+
+        } else if (user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())) {
+
+            findViewById(R.id.openingClosingContainer).setVisibility(View.GONE);
+            findViewById(R.id.branPollardContainer).setVisibility(View.VISIBLE);
+        }
+
         openingCountEt = findViewById(R.id.openingCountEt);
         closingCountEt = findViewById(R.id.closingCountEt);
         confirmOpeningCountEt = findViewById(R.id.confirmOpeningCountEt);
         confirmClosingCountEt = findViewById(R.id.confirmClosingCountEt);
+        totalBagsEt = findViewById(R.id.totalBagsEt);
+        confirmTotalBagsEt = findViewById(R.id.confirmTotalBagsEt);
 
         setUpEditTextListeners();
 
@@ -139,23 +168,32 @@ public class AddProductEntryActivity extends AppCompatActivity {
         submitBtn.setOnClickListener(v-> {
             String openingCount = openingCountEt.getText().toString();
             String closingCount = closingCountEt.getText().toString();
+            String totalBags = totalBagsEt.getText().toString();
             String confirmOpeningCount = confirmOpeningCountEt.getText().toString();
             String confirmClosingCount = confirmClosingCountEt.getText().toString();
+            String confirmTotalBags = confirmTotalBagsEt.getText().toString();
+            boolean isBranPollardOperator = user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue());
             if(selectedProdId == null || selectedProdId.isEmpty()) {
                 autoText.setError("This field is required");
                 autoText.requestFocus();
-            } else if(openingCount.isEmpty()) {
+            } else if(!isBranPollardOperator && openingCount.isEmpty()) {
                 openingCountEt.setError("This field is required");
                 openingCountEt.requestFocus();
-            } else if(closingCount.isEmpty()) {
+            } else if(!isBranPollardOperator && closingCount.isEmpty()) {
                 closingCountEt.setError("This field is required");
                 closingCountEt.requestFocus();
-            } else if(!confirmOpeningCount.equals(openingCount)) {
+            } else if(!isBranPollardOperator && !confirmOpeningCount.equals(openingCount)) {
                 confirmOpeningCountEt.setError("The opening counts do not match, please double check");
                 confirmOpeningCountEt.requestFocus();
-            }else if(!confirmClosingCount.equals(closingCount)) {
+            }else if(!isBranPollardOperator && !confirmClosingCount.equals(closingCount)) {
                 confirmClosingCountEt.setError("The closing counts do not match, please double check");
                 confirmClosingCountEt.requestFocus();
+            }else if(isBranPollardOperator && totalBags.isEmpty()) {
+                totalBagsEt.setError("This field is required");
+                totalBagsEt.requestFocus();
+            }else if(isBranPollardOperator && !confirmTotalBags.equals(totalBags)) {
+                confirmTotalBagsEt.setError("The total bags do not match, please double check");
+                confirmTotalBagsEt.requestFocus();
             }else if(photoUri == null) {
 
                 Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the machine recordings to continue", Toast.LENGTH_LONG).show();
@@ -171,11 +209,13 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     String comments = commentsET.getText().toString();
                     sendManualProductCount(
                         selectedProdId,
-                        Long.parseLong(openingCount),
-                        Long.parseLong(closingCount),
+                        isBranPollardOperator?0:Long.parseLong(openingCount),
+                        isBranPollardOperator?0:Long.parseLong(closingCount),
+                        isBranPollardOperator?Long.parseLong(totalBags):0,
                         comments,
                         getTokenFromPrefs(),
-                        imageFile
+                        imageFile,
+                        isBranPollardOperator
                     );
                 }
 
@@ -239,6 +279,32 @@ public class AddProductEntryActivity extends AppCompatActivity {
             }
         });
 
+        confirmTotalBagsEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                if(!s.toString().equals(totalBagsEt.getText().toString())) {
+                    //show error
+                    confirmTotalBagsEt.setError("The total bags values do not match");
+
+                } else {
+                    //remove error
+                    confirmTotalBagsEt.setError(null);
+                }
+
+            }
+        });
+
 
     }
 
@@ -283,13 +349,34 @@ public class AddProductEntryActivity extends AppCompatActivity {
                             for (int i = 0; i < arr.length(); i++) {
                                 JSONObject obj = arr.getJSONObject(i);
 
-                                // Assuming Product has a constructor Product(String id, String name)
-                                productList.add(new Product(
-                                    obj.getString("id"),
-                                    obj.getString("name"),
-                                    obj.getString("barcode"),
-                                    obj.getString("description")
-                                ));
+                                String productName = obj.getString("name").toLowerCase();
+//                                Log.i("prod-name", productName);
+                                boolean isBranPollardProduct = productName.contains("bran") || productName.contains("pollard");
+
+                                //only add bran/pollard products for bran pollard operator and other products for the operator
+                                if (user.getRole().equals(UserRoles.OPERATOR.getValue())) {
+
+                                    if(!isBranPollardProduct) {
+
+                                        productList.add(new Product(
+                                            obj.getString("id"),
+                                            obj.getString("name"),
+                                            obj.getString("barcode"),
+                                            obj.getString("description")
+                                        ));
+                                    }
+
+                                } else if (user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())) {
+                                    if(isBranPollardProduct) {
+
+                                        productList.add(new Product(
+                                            obj.getString("id"),
+                                            obj.getString("name"),
+                                            obj.getString("barcode"),
+                                            obj.getString("description")
+                                        ));
+                                    }
+                                }
                             }
                         }
 
@@ -325,12 +412,14 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
 
     private void sendManualProductCount(
-            String productId,
-            long openingCount,
-            long closingCount,
-            String comments,
-            String jwtToken,
-            File imageFile
+        String productId,
+        long openingCount,
+        long closingCount,
+        long totalBags,
+        String comments,
+        String jwtToken,
+        File imageFile,
+        boolean isBranPollardOperator
     ) {
 
 
@@ -340,10 +429,20 @@ public class AddProductEntryActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient();
 
         MultipartBody.Builder builder = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("product_id", productId)
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("product_id", productId);
+
+        if(!isBranPollardOperator) {
+
+            builder
                 .addFormDataPart("opening_count", String.valueOf(openingCount))
                 .addFormDataPart("closing_count", String.valueOf(closingCount));
+
+        }else {
+
+            builder
+                    .addFormDataPart("bags", String.valueOf(totalBags));
+        }
 
         if (!comments.isEmpty()) {
             builder.addFormDataPart("comments", comments);
@@ -351,11 +450,11 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
         if (imageFile != null && imageFile.exists()) {
             builder.addFormDataPart(
-                "image",                                // field name in Node route
-                imageFile.getName(),                    // file name to send
+                "image",
+                imageFile.getName(),
                 RequestBody.create(
-                        imageFile,
-                        MediaType.parse("image/*")       // let server accept any image type
+                    imageFile,
+                    MediaType.parse("image/*")
                 )
             );
         }
@@ -363,10 +462,10 @@ public class AddProductEntryActivity extends AppCompatActivity {
         RequestBody requestBody = builder.build();
 
         Request request = new Request.Builder()
-                .url(ApiBase.DEV.getUrl() + "/manual-products-count")
-                .addHeader("Authorization", "Bearer " + jwtToken)
-                .post(requestBody)
-                .build();
+            .url(ApiBase.DEV.getUrl() + "/manual-products-count")
+            .addHeader("Authorization", "Bearer " + jwtToken)
+            .post(requestBody)
+            .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override

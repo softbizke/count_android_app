@@ -89,16 +89,6 @@ public class MillDataActivity extends AppCompatActivity {
 
     }
 
-    private void checkUserRole() {
-        User userDet = getUserFromPrefs();
-
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
-
-            startActivity(new Intent(MillDataActivity.this, MainActivity.class));
-            finish();
-        }
-    }
-
 
     private void checkSignedIn() {
         String token = getTokenFromPrefs();
@@ -205,7 +195,7 @@ public class MillDataActivity extends AppCompatActivity {
         MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
         MenuItem binsReportItem = menu.findItem(R.id.bins_report);
         MenuItem homeCountData = menu.findItem(R.id.nav_home);
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+        if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
 
             if (millDataItem != null) {
                 millDataItem.setVisible(false);
@@ -424,7 +414,7 @@ public class MillDataActivity extends AppCompatActivity {
 
         User userDet = user!= null? user: getUserFromPrefs();
 
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+        if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
             addMill.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
         }

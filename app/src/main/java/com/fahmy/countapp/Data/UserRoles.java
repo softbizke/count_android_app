@@ -4,7 +4,8 @@ public enum UserRoles {
     ADMIN("ADMIN"),
     OPERATOR("OPERATOR"),
     MILLER("MILLER"),
-    CONTROLLER("CONTROLLER");
+    CONTROLLER("CONTROLLER"),
+    BRAN_POLLARD_OPERATOR("BRAN_POLLARD_OPERATOR");
     private final String value;
 
     UserRoles(String value) {

@@ -42,4 +42,6 @@
     <string name="loading">Loading...</string>
     <string name="enter_comments">Enter Comments</string>
     <string name="confirm_mill_capacity">Confirm Mill Capacity</string>
+    <string name="enter_the_number_of_kgs">Enter The Number Of Bags</string>
+    <string name="confirm_the_number_of_kgs">Confirm The Number Of Bags</string>
 </resources>

@@ -47,6 +47,7 @@
             android:layout_marginBottom="10dp"
             />
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -66,77 +67,132 @@
             android:background="@drawable/card_bg"
             android:textSize="16sp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/enter_the_opening_tonnes"
-            android:textSize="17sp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
-            />
-        <EditText
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints="false"
-            android:padding="10dp"
-            android:inputType="numberPassword"
-            android:id="@+id/openingCountEt"
-            android:background="@drawable/card_bg"
-            />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Confirm the Opening Count"
-            android:textSize="17sp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
-            />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="false"
-            android:padding="10dp"
-            android:inputType="numberPassword"
-            android:id="@+id/confirmOpeningCountEt"
-            android:background="@drawable/card_bg"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/enter_the_closing_tonnes"
-            android:textSize="17sp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
-            />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="false"
-            android:padding="10dp"
-            android:inputType="numberPassword"
-            android:id="@+id/closingCountEt"
-            android:background="@drawable/card_bg"
-            />
+            android:orientation="vertical"
+            android:id="@+id/openingClosingContainer"
+            >
 
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Confirm Closing Count"
-            android:textSize="17sp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
-            />
-        <EditText
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enter_the_opening_tonnes"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/openingCountEt"
+                android:background="@drawable/card_bg"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confirm the Opening Count"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/confirmOpeningCountEt"
+                android:background="@drawable/card_bg"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enter_the_closing_tonnes"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/closingCountEt"
+                android:background="@drawable/card_bg"
+                />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Confirm Closing Count"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/confirmClosingCountEt"
+                android:background="@drawable/card_bg"
+                />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints="false"
-            android:padding="10dp"
-            android:inputType="numberPassword"
-            android:id="@+id/confirmClosingCountEt"
-            android:background="@drawable/card_bg"
-            />
+            android:orientation="vertical"
+            android:id="@+id/branPollardContainer"
+            android:visibility="gone"
+            >
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enter_the_number_of_kgs"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/totalBagsEt"
+                android:background="@drawable/card_bg"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/confirm_the_number_of_kgs"
+                android:textSize="17sp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="false"
+                android:padding="10dp"
+                android:inputType="numberPassword"
+                android:id="@+id/confirmTotalBagsEt"
+                android:background="@drawable/card_bg"
+                />
+
+        </LinearLayout>
 
 
         <TextView

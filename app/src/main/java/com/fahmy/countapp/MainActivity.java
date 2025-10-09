@@ -102,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
         navigationView = findViewById(R.id.navigation_view);
 
 
+
+
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true); // Show hamburger
@@ -115,8 +117,9 @@ public class MainActivity extends AppCompatActivity {
         MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
         MenuItem binsReportItem = menu.findItem(R.id.bins_report);
         MenuItem homeCountData = menu.findItem(R.id.nav_home);
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
 
+
+        if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
             if (millDataItem != null) {
                 millDataItem.setVisible(false);
             }
@@ -346,14 +349,16 @@ public class MainActivity extends AppCompatActivity {
                                     String openingCount = obj.optString("opening_count");
                                     String closingCount = obj.optString("closing_count");
                                     String totalCount = obj.optString("total_count", "0");
+                                    String totalBags = obj.optString("bags", "");
                                     String totalBalesStr = obj.optString("total_bales", "0");
+                                    String totalKgs = obj.optString("total_kgs", "0");
                                     String filePath = obj.optString("photo_path", "");
                                     String comments = obj.optString("comments", "");
 
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
-                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalCount, String.valueOf(totalBales.doubleValue()), filePath, comments));
+                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalBags, totalCount, String.valueOf(totalBales.doubleValue()), totalKgs, filePath, comments));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -432,7 +437,7 @@ public class MainActivity extends AppCompatActivity {
 
         User userDet = user!= null? user: getUserFromPrefs();
 
-        if(userDet != null && userDet.getRole().equals(UserRoles.OPERATOR.getValue())) {
+        if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
             addMill.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
         }

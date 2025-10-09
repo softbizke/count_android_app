@@ -2,15 +2,17 @@ package com.fahmy.countapp.Data;
 
 public class ProductEntry {
 
-    private String productTitle, productDescription, openingCount, closingCount, totalCount, totalBales, photo_path, comments;
+    private String productTitle, productDescription, openingCount, closingCount, bags, totalCount, totalBales, totalKgs, photo_path, comments;
 
-    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String totalCount, String totalBales, String photo_path, String comments) {
+    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String photo_path, String comments) {
         this.productTitle = productTitle;
         this.productDescription = productDescription;
         this.openingCount = openingCount;
         this.closingCount = closingCount;
+        this.bags = bags;
         this.totalCount = totalCount;
         this.totalBales = totalBales;
+        this.totalKgs = totalKgs;
         this.photo_path = photo_path;
         this.comments = comments;
     }
@@ -47,6 +49,14 @@ public class ProductEntry {
         this.closingCount = closingCount;
     }
 
+    public String getBags() {
+        return bags;
+    }
+
+    public void setBags(String bags) {
+        this.bags = bags;
+    }
+
     public String getTotalCount() {
         return totalCount;
     }
@@ -63,6 +73,13 @@ public class ProductEntry {
         this.totalBales = totalBales;
     }
 
+    public String getTotalKgs() {
+        return totalKgs;
+    }
+
+    public void setTotalKgs(String totalKgs) {
+        this.totalKgs = totalKgs;
+    }
 
     public String getPhoto_path() {
         return photo_path;
