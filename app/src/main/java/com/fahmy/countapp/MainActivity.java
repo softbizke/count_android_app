@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
-                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalBags, totalCount, String.valueOf(totalBales.doubleValue()), totalKgs, filePath, comments));
+                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalBags, totalCount, String.valueOf(totalBales.doubleValue()), totalKgs, filePath, comments, user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())));
                                 }
                                 adapter.notifyDataSetChanged();
                             }

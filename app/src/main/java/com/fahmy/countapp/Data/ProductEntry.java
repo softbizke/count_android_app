@@ -3,8 +3,9 @@ package com.fahmy.countapp.Data;
 public class ProductEntry {
 
     private String productTitle, productDescription, openingCount, closingCount, bags, totalCount, totalBales, totalKgs, photo_path, comments;
+    private  boolean isBranPollardOperator;
 
-    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String photo_path, String comments) {
+    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String photo_path, String comments, boolean isBranPollardOperator) {
         this.productTitle = productTitle;
         this.productDescription = productDescription;
         this.openingCount = openingCount;
@@ -15,6 +16,7 @@ public class ProductEntry {
         this.totalKgs = totalKgs;
         this.photo_path = photo_path;
         this.comments = comments;
+        this.isBranPollardOperator = isBranPollardOperator;
     }
 
     public String getProductTitle() {
@@ -95,5 +97,13 @@ public class ProductEntry {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public boolean isBranPollardOperator() {
+        return isBranPollardOperator;
+    }
+
+    public void setBranPollardOperator(boolean branPollardOperator) {
+        isBranPollardOperator = branPollardOperator;
     }
 }

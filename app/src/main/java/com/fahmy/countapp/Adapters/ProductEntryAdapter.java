@@ -43,7 +43,7 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
     public void onBindViewHolder(@NonNull ProductEntryAdapter.ViewHolder holder, int position) {
         ProductEntry productEntry = items.get(position);
         holder.productTitleTv.setText(productEntry.getProductTitle() + " - " + Util.extractWeight(productEntry.getProductDescription() ) + " Kgs");
-        if(productEntry.getBags().isEmpty()) {
+        if(!productEntry.isBranPollardOperator()) {
             holder.openingCountTv.setVisibility(View.VISIBLE);
             holder.closingCountTv.setVisibility(View.VISIBLE);
             holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());

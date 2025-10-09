@@ -14,8 +14,8 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:src="@drawable/baseline_document_scanner_24"
             android:background="@drawable/round_img"
             android:backgroundTint="@color/light_blue"
