@@ -261,6 +261,7 @@ public class AddMillDataActivity extends AppCompatActivity {
 
 
 
+        submitBtn.setEnabled(false);
         AlertDialog progressDialog = Util.showDialog(AddMillDataActivity.this, "Submitting data...", R.color.blue);
         runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
@@ -304,6 +305,7 @@ public class AddMillDataActivity extends AppCompatActivity {
                     ).show();
 
                     Util.hideDialog(progressDialog);
+                    submitBtn.setEnabled(true);
                 });
             }
 
@@ -315,6 +317,7 @@ public class AddMillDataActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                         Toast.makeText(AddMillDataActivity.this,
                                 "Data added successfully",
                                 Toast.LENGTH_SHORT
@@ -331,6 +334,7 @@ public class AddMillDataActivity extends AppCompatActivity {
                         ).show();
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                     });
                 }
             }

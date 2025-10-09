@@ -3,14 +3,18 @@ package com.fahmy.countapp;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -38,8 +42,9 @@ import okhttp3.Response;
 public class LoginActivity extends AppCompatActivity {
 
     EditText phoneEt, codeEt;
-    TextView codeTv;
+    TextView codeTv, resendCodeBtn;
     Button submitBtn;
+    LinearLayout resendCodeLL;
 
     Boolean isCodeSent = false;
     @Override
@@ -52,6 +57,9 @@ public class LoginActivity extends AppCompatActivity {
         codeEt = findViewById(R.id.codeEt);
         codeTv = findViewById(R.id.codeTv);
         submitBtn = findViewById(R.id.submitBtn);
+        resendCodeBtn = findViewById(R.id.resendCodeBtn);
+        resendCodeLL = findViewById(R.id.resendCodeLL);
+
 
         submitBtn.setOnClickListener(v->{
             String phone = phoneEt.getText().toString();
@@ -142,11 +150,92 @@ public class LoginActivity extends AppCompatActivity {
                                     codeTv.setVisibility(TextView.VISIBLE);
                                     submitBtn.setText(R.string.verify_code);
 
+                                    resendCodeLL.setVisibility(View.VISIBLE);
+
+
                                     Util.hideDialog(progressDialog);
                                     Toast.makeText(LoginActivity.this,
                                             resp,
                                             Toast.LENGTH_LONG).show();
                                 }
+                            } else {
+
+                                Util.hideDialog(progressDialog);
+                                Toast.makeText(LoginActivity.this,
+                                        "Error: " + resp,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                });
+
+            }
+
+        });
+
+        resendCodeBtn.setOnClickListener(v->{
+            String phone = phoneEt.getText().toString();
+            if(phone.isEmpty()) {
+                phoneEt.setError("Phone number is required");
+                phoneEt.requestFocus();
+            } else {
+
+                AlertDialog progressDialog = Util.showDialog(LoginActivity.this, "Resending Verification code...", R.color.blue);
+                runOnUiThread(progressDialog::show);
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("phone_no", phone);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                    Toast.makeText(LoginActivity.this, "Login error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+
+                    runOnUiThread(() -> Util.hideDialog(progressDialog));
+                    return;
+                }
+
+                // Send request
+                OkHttpClient client = new OkHttpClient();
+
+                RequestBody body = RequestBody.create(
+                        json.toString(),
+                        MediaType.get("application/json; charset=utf-8")
+                );
+
+                Request request = new Request.Builder()
+                        .url(ApiBase.CURRENT.getUrl() + "/auth/resend-verification-code")
+                        .post(body)
+                        .build();
+
+                // Network call must be off the UI thread
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(@NotNull Call call, @NotNull IOException e) {
+                        Log.e("onFailure", e.getMessage());
+                        runOnUiThread(() ->{
+                                Toast.makeText(LoginActivity.this,
+                                        "Request failed: " + e.getMessage(),
+                                        Toast.LENGTH_LONG).show();
+
+                            Util.hideDialog(progressDialog);
+                        });
+                    }
+
+                    @Override
+                    public void onResponse(@NotNull Call call, @NotNull Response response)
+                            throws IOException {
+                        final String resp = response.body().string();
+                        runOnUiThread(() -> {
+                            if (response.isSuccessful()) {
+                                // Handle JSON result here
+
+                                Util.hideDialog(progressDialog);
+
+                                Toast.makeText(LoginActivity.this,
+                                        "Code has been sent successfully",
+                                        Toast.LENGTH_LONG).show();
                             } else {
 
                                 Util.hideDialog(progressDialog);

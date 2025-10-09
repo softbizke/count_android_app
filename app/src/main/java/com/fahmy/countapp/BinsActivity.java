@@ -1,5 +1,6 @@
 package com.fahmy.countapp;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -50,8 +51,10 @@ import java.util.Locale;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class BinsActivity extends AppCompatActivity {
@@ -177,7 +180,7 @@ public class BinsActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.logout_menu, menu);
+        getMenuInflater().inflate(R.menu.bins_logout_menu, menu);
 
         return true;
     }
@@ -186,6 +189,25 @@ public class BinsActivity extends AppCompatActivity {
         if (item.getItemId() == android.R.id.home) {
             drawerLayout.openDrawer(GravityCompat.START);
             return true;
+        }
+
+        if(item.getItemId() == R.id.endBinBtn) {
+
+            List<String> ids = new ArrayList<>();
+
+            for (int i = 0; i < binsReportList.size(); i++) {
+                BinReport binReport = binsReportList.get(i);
+
+                if(binReport.getRingCount() > 0 && (binReport.getEndingTime().isEmpty() || binReport.getEndingTime().equals("null"))) {
+                    ids.add(binReport.getBinId());
+                }
+
+            }
+            if(ids.isEmpty()) {
+                Toast.makeText(BinsActivity.this, "No Bin data to be updated", Toast.LENGTH_LONG).show();
+            }else {
+                endBins(ids);
+            }
         }
 
         if (item.getItemId() == R.id.logout){
@@ -264,10 +286,12 @@ public class BinsActivity extends AppCompatActivity {
                                     JSONObject obj = arr.getJSONObject(i);
 
                                     binsReportList.add(new BinReport(
+                                        obj.optString("id", ""),
                                         obj.optInt("ring_count", 0),
                                         obj.optString("bin_type", ""),
                                         obj.optString("bales", ""),
                                         obj.optString("ending_time", ""),
+                                        obj.optString("ended_by_name", ""),
                                         obj.optString("comments", "")
                                     ));
                                 }
@@ -439,4 +463,83 @@ public class BinsActivity extends AppCompatActivity {
         checkSignedIn();
 
     }
+
+
+
+    private void endBins(List<String> binIds) {
+        AlertDialog progressDialog = Util.showDialog(this, "Ending bins...", R.color.blue);
+        runOnUiThread(progressDialog::show);
+
+        OkHttpClient client = new OkHttpClient();
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+
+        // Build JSON array of bin IDs
+        JSONObject requestBodyJson = new JSONObject();
+        try {
+            requestBodyJson.put("bin_ids", new JSONArray(binIds));
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to prepare data", Toast.LENGTH_LONG).show();
+            Util.hideDialog(progressDialog);
+            return;
+        }
+
+        RequestBody requestBody = RequestBody.create(requestBodyJson.toString(), JSON);
+
+        Request request = new Request.Builder()
+                .url(ApiBase.DEV.getUrl() + "/end-bins-report") // endpoint no longer has /{id}
+                .addHeader("Authorization", "Bearer " + getTokenFromPrefs())
+                .put(requestBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                runOnUiThread(() -> {
+                    Util.hideDialog(progressDialog);
+                    Toast.makeText(
+                            BinsActivity.this,
+                            "Network error: " + e.getMessage(),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                final String resBody = response.body() != null ? response.body().string() : "";
+
+                runOnUiThread(() -> {
+                    Util.hideDialog(progressDialog);
+
+                    if (response.isSuccessful()) {
+                        Log.i("Bins End Response", resBody);
+
+
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+                        sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                        // Start date → today at 12:00 AM
+                        Calendar startCal = Calendar.getInstance();
+                        startCal.set(Calendar.HOUR_OF_DAY, 0);
+                        startCal.set(Calendar.MINUTE, 0);
+                        startCal.set(Calendar.SECOND, 0);
+                        startCal.set(Calendar.MILLISECOND, 0);
+                        String startDate = sdf.format(startCal.getTime());
+
+                        // End date → tomorrow at 12:00 AM
+                        Calendar endCal = (Calendar) startCal.clone();
+                        endCal.add(Calendar.DAY_OF_MONTH, 1);
+                        String endDate = sdf.format(endCal.getTime());
+
+                        fetchBinReportData(getTokenFromPrefs(), 1, 1000, "", startDate, endDate );
+                        Toast.makeText(BinsActivity.this, "Bins ended successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("EndBins Error", resBody);
+                        Toast.makeText(BinsActivity.this, "Server error: " + resBody, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+    }
+
 }

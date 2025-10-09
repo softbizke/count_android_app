@@ -1,15 +1,25 @@
 package com.fahmy.countapp.Adapters;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fahmy.countapp.AddBinsActivity;
+import com.fahmy.countapp.AddProductEntryActivity;
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.BinReport;
 import com.fahmy.countapp.Data.MillData;
@@ -17,8 +27,21 @@ import com.fahmy.countapp.Data.Util;
 import com.fahmy.countapp.R;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.ViewHolder>{
 
@@ -43,8 +66,15 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
         BinReport binReport = items.get(position);
         holder.ringCountTv.setText("Rings: " + binReport.getRingCount());
         holder.binTypeTv.setText( binReport.getBinType());
-        holder.endingTimeTv.setText(Util.formatDate(binReport.getEndingTime()));
         holder.totalBalesTv.setText("Bales: " + binReport.getTotalBales());
+
+        if (binReport.getEndingTime().isEmpty() || binReport.getEndingTime().equals("null")) {
+            holder.endingTimeTv.setVisibility(View.GONE);
+        }else {
+            holder.endingTimeTv.setVisibility(View.VISIBLE);
+            holder.endingTimeTv.setText("Ended At: " + Util.formatDate(binReport.getEndingTime()));
+        }
+
         if(binReport.getComments().isEmpty() || binReport.getComments() == null || Objects.equals(binReport.getComments(), "null")) {
             holder.commentsTv.setVisibility(View.GONE);
         }else {
@@ -54,6 +84,7 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
 
 
     }
+
 
     @Override
     public int getItemCount() {
@@ -72,5 +103,11 @@ public class BinsReportAdapter extends RecyclerView.Adapter<BinsReportAdapter.Vi
             photoIv = view.findViewById(R.id.photoIv);
             commentsTv = view.findViewById(R.id.commentsTv);
         }
+    }
+
+
+    private String getTokenFromPrefs() {
+        SharedPreferences prefs = context.getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        return prefs.getString("jwt_token", null);
     }
 }

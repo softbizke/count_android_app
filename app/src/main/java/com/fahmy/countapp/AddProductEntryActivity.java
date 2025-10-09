@@ -38,6 +38,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.fahmy.countapp.Adapters.ProductAutoCompleteAdapter;
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.Product;
 import com.fahmy.countapp.Data.User;
@@ -54,7 +55,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -343,12 +346,16 @@ public class AddProductEntryActivity extends AppCompatActivity {
                         JSONArray arr = dataObj.getJSONArray("data");
 
                         List<Product> productList = new ArrayList<>();
+                        Set<String> seenProductIds = new HashSet<>();
 
                         if(arr.length() > 0) {
                             productList.clear();
                             for (int i = 0; i < arr.length(); i++) {
                                 JSONObject obj = arr.getJSONObject(i);
 
+
+                                String productId = obj.getString("id");
+                                if (seenProductIds.contains(productId)) continue;
                                 String productName = obj.getString("name").toLowerCase();
 //                                Log.i("prod-name", productName);
                                 boolean isBranPollardProduct = productName.contains("bran") || productName.contains("pollard");
@@ -364,6 +371,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                                             obj.getString("barcode"),
                                             obj.getString("description")
                                         ));
+                                        seenProductIds.add(productId);
                                     }
 
                                 } else if (user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())) {
@@ -375,6 +383,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                                             obj.getString("barcode"),
                                             obj.getString("description")
                                         ));
+                                        seenProductIds.add(productId);
                                     }
                                 }
                             }
@@ -395,13 +404,11 @@ public class AddProductEntryActivity extends AppCompatActivity {
     }
 
     private void setupAutoComplete(List<Product> products) {
-
-        ArrayAdapter<Product> adapter =
-            new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line,
-                products);
+        ProductAutoCompleteAdapter adapter =
+                new ProductAutoCompleteAdapter(this, android.R.layout.simple_dropdown_item_1line, products);
 
         autoText.setAdapter(adapter);
+        autoText.setThreshold(1);
 
         autoText.setOnItemClickListener((parent, view, position, id) -> {
             Product selectedProduct = (Product) parent.getItemAtPosition(position);
@@ -409,6 +416,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
             Log.d("Selected Product ID", selectedProdId);
         });
     }
+
 
 
     private void sendManualProductCount(
@@ -424,6 +432,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
 
 
+        submitBtn.setEnabled(false);
         AlertDialog progressDialog = Util.showDialog(AddProductEntryActivity.this, "Submitting data...", R.color.blue);
         runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
@@ -478,6 +487,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     ).show();
 
                     Util.hideDialog(progressDialog);
+                    submitBtn.setEnabled(true);
                 });
             }
 
@@ -489,6 +499,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                         Toast.makeText(
                                 AddProductEntryActivity.this,
                                 "Data added successfully",
@@ -501,6 +512,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                         Toast.makeText(
                                 AddProductEntryActivity.this,
                                 "Server error: " + resBody,

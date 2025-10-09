@@ -44,4 +44,8 @@
     <string name="confirm_mill_capacity">Confirm Mill Capacity</string>
     <string name="enter_the_number_of_kgs">Enter The Number Of Bags</string>
     <string name="confirm_the_number_of_kgs">Confirm The Number Of Bags</string>
+    <string name="resend_code">Resend Code</string>
+    <string name="didn_t_receive_code">Didn\'t receive code?</string>
+    <string name="end_bin">End Bin</string>
+    <string name="end_bins">End Bins</string>
 </resources>

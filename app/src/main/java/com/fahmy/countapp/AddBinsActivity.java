@@ -198,6 +198,7 @@ public class AddBinsActivity extends AppCompatActivity {
     ) {
 
 
+        submitBtn.setEnabled(false);
         AlertDialog progressDialog = Util.showDialog(AddBinsActivity.this, "Submitting data...", R.color.blue);
         runOnUiThread(progressDialog::show);
         OkHttpClient client = new OkHttpClient();
@@ -225,6 +226,7 @@ public class AddBinsActivity extends AppCompatActivity {
                     ).show();
 
                     Util.hideDialog(progressDialog);
+                    submitBtn.setEnabled(true);
                 });
             }
 
@@ -236,6 +238,7 @@ public class AddBinsActivity extends AppCompatActivity {
                     runOnUiThread(() -> {
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                         Toast.makeText(AddBinsActivity.this,
                                 "Data added successfully",
                                 Toast.LENGTH_SHORT
@@ -253,6 +256,7 @@ public class AddBinsActivity extends AppCompatActivity {
                         ).show();
 
                         Util.hideDialog(progressDialog);
+                        submitBtn.setEnabled(true);
                     });
                 }
             }

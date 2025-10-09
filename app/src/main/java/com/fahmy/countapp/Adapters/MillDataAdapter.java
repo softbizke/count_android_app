@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fahmy.countapp.Data.ApiBase;
@@ -51,6 +52,9 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
                 .placeholder(R.drawable.baseline_document_scanner_24)
                 .error(R.drawable.baseline_document_scanner_24)
                 .into(holder.photoIv);
+
+
+            holder.photoIv.setOnClickListener(v-> showImageDialog(ApiBase.ROOT.getUrl() + millData.getPhoto_path()));
         }
 
         if(millData.getComments().isEmpty() || millData.getComments() == null || Objects.equals(millData.getComments(), "null")) {
@@ -78,5 +82,26 @@ public class MillDataAdapter extends RecyclerView.Adapter<MillDataAdapter.ViewHo
             photoIv = view.findViewById(R.id.photoIv);
             commentsTv = view.findViewById(R.id.commentsTv);
         }
+    }
+
+
+    private void showImageDialog(String imageUrl) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_image_preview, null);
+        builder.setView(dialogView);
+
+        ImageView fullImageView = dialogView.findViewById(R.id.fullImageView);
+        Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.baseline_document_scanner_24)
+                .error(R.drawable.baseline_document_scanner_24)
+                .into(fullImageView);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Optional: close when user taps the image
+        fullImageView.setOnClickListener(v -> dialog.dismiss());
     }
 }

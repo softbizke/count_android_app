@@ -23,7 +23,7 @@ public class Product {
 
     @Override
     public String toString() {
-        return name + " – " + Util.extractWeight(description) + " Kgs"; // important for AutoCompleteTextView to show the name
+        return name + " - " + Util.extractWeight(description) + " Kgs"; // important for AutoCompleteTextView to show the name
     }
 }
 
