@@ -48,4 +48,9 @@
     <string name="didn_t_receive_code">Didn\'t receive code?</string>
     <string name="end_bin">End Bin</string>
     <string name="end_bins">End Bins</string>
+    <string name="atta_report">Atta Report</string>
+    <string name="add_atta_report">Add Atta Report</string>
+    <string name="atta_flour">Atta Flour</string>
+    <string name="enter_the_number_of_bags">Enter The Total Number Of Bags</string>
+    <string name="confirm_the_total_number_of_bags">Confirm The Total Number Of Bags</string>
 </resources>

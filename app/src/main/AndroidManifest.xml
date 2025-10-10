@@ -21,6 +21,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".AddAttaReportActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AttaReportActivity"
+            android:exported="false" />
+        <activity
             android:name=".BinsActivity"
             android:exported="false" />
         <activity

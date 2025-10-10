@@ -12,4 +12,8 @@
         android:id="@+id/bins_report"
         android:title="@string/bins_report"
         android:icon="@drawable/outline_account_tree_24"/>
+    <item
+        android:id="@+id/atta_report"
+        android:title="@string/atta_report"
+        android:icon="@drawable/outline_ad_group_24"/>
 </menu>

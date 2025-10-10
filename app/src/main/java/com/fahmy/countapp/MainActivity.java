@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
         MenuItem binsReportItem = menu.findItem(R.id.bins_report);
         MenuItem homeCountData = menu.findItem(R.id.nav_home);
+        MenuItem attaReport = menu.findItem(R.id.atta_report);
 
 
         if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
@@ -126,6 +127,9 @@ public class MainActivity extends AppCompatActivity {
             if (binsReportItem != null) {
                 binsReportItem.setVisible(false);
             }
+            if (attaReport != null) {
+                attaReport.setVisible(false);
+            }
         } else if(userDet != null && userDet.getRole().equals(UserRoles.MILLER.getValue())) {
 
             if (homeCountData != null) {
@@ -133,6 +137,9 @@ public class MainActivity extends AppCompatActivity {
             }
             if (binsReportItem != null) {
                 binsReportItem.setVisible(false);
+            }
+            if (attaReport != null) {
+                attaReport.setVisible(false);
             }
         } else if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {
 
@@ -154,6 +161,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.bins_report) {
                 startActivity(new Intent(MainActivity.this, BinsActivity.class));
+                finish();
+            }
+
+            if (item.getItemId() == R.id.atta_report) {
+                startActivity(new Intent(MainActivity.this, AttaReportActivity.class));
                 finish();
             }
 
@@ -415,6 +427,7 @@ public class MainActivity extends AppCompatActivity {
         TextView addCount = bottomSheetView.findViewById(R.id.addCountData);
         TextView addMill = bottomSheetView.findViewById(R.id.addMillData);
         TextView addBin = bottomSheetView.findViewById(R.id.addBinReport);
+        TextView addAttaReport = bottomSheetView.findViewById(R.id.addAttaReport);
 
 
 
@@ -435,16 +448,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        addAttaReport.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            startActivity(new Intent(MainActivity.this, AddAttaReportActivity.class));
+        });
+
+
         User userDet = user!= null? user: getUserFromPrefs();
 
         if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
             addMill.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
+            addAttaReport.setVisibility(View.GONE);
         }
 
         if(userDet != null && userDet.getRole().equals(UserRoles.MILLER.getValue())) {
             addCount.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
+            addAttaReport.setVisibility(View.GONE);
         }
 
         if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {

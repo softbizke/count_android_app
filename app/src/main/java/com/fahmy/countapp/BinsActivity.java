@@ -385,6 +385,12 @@ public class BinsActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.bins_report) {
             }
+
+
+            if (item.getItemId() == R.id.atta_report) {
+                startActivity(new Intent(BinsActivity.this, AttaReportActivity.class));
+                finish();
+            }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -418,6 +424,7 @@ public class BinsActivity extends AppCompatActivity {
         TextView addCount = bottomSheetView.findViewById(R.id.addCountData);
         TextView addMill = bottomSheetView.findViewById(R.id.addMillData);
         TextView addBin = bottomSheetView.findViewById(R.id.addBinReport);
+        TextView addAttaReport = bottomSheetView.findViewById(R.id.addAttaReport);
 
 
 
@@ -437,16 +444,24 @@ public class BinsActivity extends AppCompatActivity {
         });
 
 
+        addAttaReport.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            startActivity(new Intent(BinsActivity.this, AddAttaReportActivity.class));
+        });
+
+
         User userDet = user!= null? user: getUserFromPrefs();
 
         if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
             addMill.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
+            addAttaReport.setVisibility(View.GONE);
         }
 
         if(userDet != null && userDet.getRole().equals(UserRoles.MILLER.getValue())) {
             addCount.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
+            addAttaReport.setVisibility(View.GONE);
         }
 
         if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {

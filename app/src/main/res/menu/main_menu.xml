@@ -10,4 +10,9 @@
         android:id="@+id/action_add_mill"
         android:title="@string/add_mill_data"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_atta"
+        android:title="@string/add_atta_report"
+        app:showAsAction="never" />
 </menu>

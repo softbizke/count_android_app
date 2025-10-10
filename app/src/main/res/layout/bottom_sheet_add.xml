@@ -47,4 +47,19 @@
         android:clickable="true"
         android:focusable="true" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/light_gray" />
+
+    <TextView
+        android:id="@+id/addAttaReport"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/add_atta_report"
+        android:textSize="18sp"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true" />
+
 </LinearLayout>

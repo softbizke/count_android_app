@@ -23,11 +23,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fahmy.countapp.Adapters.MillDataAdapter;
-import com.fahmy.countapp.Adapters.ProductEntryAdapter;
+import com.fahmy.countapp.Adapters.AttaDataAdapter;
+import com.fahmy.countapp.Adapters.AttaDataAdapter;
 import com.fahmy.countapp.Data.ApiBase;
-import com.fahmy.countapp.Data.MillData;
-import com.fahmy.countapp.Data.ProductEntry;
+import com.fahmy.countapp.Data.AttaData;
+import com.fahmy.countapp.Data.AttaData;
 import com.fahmy.countapp.Data.User;
 import com.fahmy.countapp.Data.UserRoles;
 import com.fahmy.countapp.Data.Util;
@@ -41,8 +41,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,28 +54,30 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MillDataActivity extends AppCompatActivity {
-    List<MillData> millReportEntryList;
+public class AttaReportActivity extends AppCompatActivity {
+
+    List<AttaData> attaReportEntryList;
     RecyclerView rv;
-    MillDataAdapter adapter;
+    AttaDataAdapter adapter;
     DrawerLayout drawerLayout;
     User user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_mill_data);
+        setContentView(R.layout.activity_atta_report);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle("Mill Data Report");
+            actionBar.setTitle("Atta Data Report");
         }
 
         setUpUiMainFeatures();
         rv = findViewById(R.id.millDataRv);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        millReportEntryList = new ArrayList<>();
-        adapter = new MillDataAdapter(MillDataActivity.this, millReportEntryList);
+        attaReportEntryList = new ArrayList<>();
+        adapter = new AttaDataAdapter(AttaReportActivity.this, attaReportEntryList);
         rv.setAdapter(adapter);
 
         findViewById(R.id.fab).setOnClickListener(v->{
@@ -114,7 +114,7 @@ public class MillDataActivity extends AppCompatActivity {
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     // Network error – handle gracefully (e.g., show a Toast on UI thread)
                     runOnUiThread(() ->
-                            Toast.makeText(MillDataActivity.this, "Network error: " + e.getMessage(),
+                            Toast.makeText(AttaReportActivity.this, "Network error: " + e.getMessage(),
                                     Toast.LENGTH_SHORT).show());
                 }
 
@@ -162,12 +162,12 @@ public class MillDataActivity extends AppCompatActivity {
                             endCal.add(Calendar.DAY_OF_MONTH, 1);
                             String endDate = sdf.format(endCal.getTime());
 
-                            fetchManualMillData(token, 1, 1000, "", startDate, endDate );
+                            fetchAttaReport(token, 1, 1000, "", startDate, endDate );
 
                         }
                     } catch (JSONException e) {
                         Log.e("Signed in", e.getMessage());
-                        runOnUiThread(() -> Toast.makeText(MillDataActivity.this,
+                        runOnUiThread(() -> Toast.makeText(AttaReportActivity.this,
                                 "Invalid server response", Toast.LENGTH_SHORT).show());
                     }
                 }
@@ -192,13 +192,13 @@ public class MillDataActivity extends AppCompatActivity {
         User userDet = user!= null? user: getUserFromPrefs();
 
         Menu menu = navigationView.getMenu();
-        MenuItem millDataItem = menu.findItem(R.id.nav_mill_data);
+        MenuItem AttaDataItem = menu.findItem(R.id.nav_mill_data);
         MenuItem binsReportItem = menu.findItem(R.id.bins_report);
         MenuItem homeCountData = menu.findItem(R.id.nav_home);
         if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
 
-            if (millDataItem != null) {
-                millDataItem.setVisible(false);
+            if (AttaDataItem != null) {
+                AttaDataItem.setVisible(false);
             }
             if (binsReportItem != null) {
                 binsReportItem.setVisible(false);
@@ -213,8 +213,8 @@ public class MillDataActivity extends AppCompatActivity {
             }
         } else if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {
 
-            if (millDataItem != null) {
-                millDataItem.setVisible(false);
+            if (AttaDataItem != null) {
+                AttaDataItem.setVisible(false);
             }
             if (homeCountData != null) {
                 homeCountData.setVisible(false);
@@ -225,24 +225,23 @@ public class MillDataActivity extends AppCompatActivity {
 
         navigationView.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_home) {
-                startActivity(new Intent(MillDataActivity.this, MainActivity.class));
+                startActivity(new Intent(AttaReportActivity.this, MainActivity.class));
                 finish();
             }
             if (item.getItemId() == R.id.nav_mill_data) {
+                startActivity(new Intent(AttaReportActivity.this, MillDataActivity.class));
+                finish();
             }
 
 
             if (item.getItemId() == R.id.bins_report) {
-                startActivity(new Intent(MillDataActivity.this, BinsActivity.class));
+                startActivity(new Intent(AttaReportActivity.this, BinsActivity.class));
                 finish();
             }
 
 
             if (item.getItemId() == R.id.atta_report) {
-                startActivity(new Intent(MillDataActivity.this, AttaReportActivity.class));
-                finish();
             }
-
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
@@ -272,23 +271,23 @@ public class MillDataActivity extends AppCompatActivity {
                 .edit()
                 .remove("user")
                 .apply();
-            startActivity(new Intent(MillDataActivity.this, LoginActivity.class));
+            startActivity(new Intent(AttaReportActivity.this, LoginActivity.class));
             finish();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-    private void fetchManualMillData(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
+    private void fetchAttaReport(String jwtToken, int page, int perPage, String search, String startDate, String endDate) {
 
         final AlertDialog[] progressDialog = new AlertDialog[1];
 
         runOnUiThread(() -> {
-            progressDialog[0] = Util.showDialog(MillDataActivity.this, "Fetching today's data...", R.color.blue);
+            progressDialog[0] = Util.showDialog(AttaReportActivity.this, "Fetching today's data...", R.color.blue);
             progressDialog[0].show();
         });
         OkHttpClient client = new OkHttpClient();
 
-        HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/manual-mill-data")
+        HttpUrl url = HttpUrl.parse(ApiBase.DEV.getUrl() + "/atta-data-report")
                 .newBuilder()
                 .addQueryParameter("page", String.valueOf(page))
                 .addQueryParameter("perPage", String.valueOf(perPage))
@@ -309,8 +308,8 @@ public class MillDataActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
 
                     Util.hideDialog(progressDialog[0]);
-                    Toast.makeText(MillDataActivity.this,
-                            "Failed to fetch mill data: " + e.getMessage(),
+                    Toast.makeText(AttaReportActivity.this,
+                            "Failed to fetch Atta data: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
             }
@@ -319,7 +318,7 @@ public class MillDataActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if (response.isSuccessful()) {
                     final String respBody = response.body().string();
-                    Log.i("mill data report respBody", respBody);
+                    Log.i("Atta data report respBody", respBody);
                     runOnUiThread(() -> {
                         try {
                             JSONObject root = new JSONObject(respBody);
@@ -330,19 +329,18 @@ public class MillDataActivity extends AppCompatActivity {
                             // Get the array inside "data"
                             JSONArray arr = dataObj.getJSONArray("data");
 
-                            millReportEntryList.clear();
+                            attaReportEntryList.clear();
                             if(arr.length() > 0) {
                                 for (int i = 0; i < arr.length(); i++) {
 
                                     JSONObject obj = arr.getJSONObject(i);
 
-                                    String millCapacity   = obj.optString("mill_capacity");
-                                    String machine   = obj.optString("machine");
-                                    String millExtraction = obj.optString("mill_extraction");
-                                    String filePath = obj.optString("photo_path", "");
-                                    String comments = obj.optString("comments", "");
-
-                                    millReportEntryList.add(new MillData(machine, millCapacity, millExtraction, filePath, comments));
+                                    attaReportEntryList.add(new AttaData(
+                                        obj.optString("bags", "0"),
+                                        obj.optString("first_name", "") + " " + obj.optString("last_name", ""),
+                                        obj.optString("total_kgs", "0"),
+                                        obj.optString("comments", "")
+                                    ));
                                 }
                                 adapter.notifyDataSetChanged();
                             }
@@ -352,19 +350,19 @@ public class MillDataActivity extends AppCompatActivity {
 
                             Util.hideDialog(progressDialog[0]);
                             e.printStackTrace();
-                            Toast.makeText(MillDataActivity.this,
-                                    "Error fetching mill data: " + e.getMessage(),
+                            Toast.makeText(AttaReportActivity.this,
+                                    "Error fetching Atta data: " + e.getMessage(),
                                     Toast.LENGTH_SHORT).show();
                         }
 
-                        Log.d("MillData", respBody);
+                        Log.d("AttaData", respBody);
                     });
                 } else {
                     runOnUiThread(() -> {
 
                         Util.hideDialog(progressDialog[0]);
-                        Toast.makeText(MillDataActivity.this,
-                                "Error fetching mill data: " + response.code(),
+                        Toast.makeText(AttaReportActivity.this,
+                                "Error fetching Atta data: " + response.code(),
                                 Toast.LENGTH_SHORT).show();
                     });
                 }
@@ -375,7 +373,7 @@ public class MillDataActivity extends AppCompatActivity {
 
 
     private void redirectToLogin() {
-        Intent intent = new Intent(MillDataActivity.this, LoginActivity.class);
+        Intent intent = new Intent(AttaReportActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
@@ -398,7 +396,7 @@ public class MillDataActivity extends AppCompatActivity {
         bottomSheetDialog.setContentView(bottomSheetView);
 
         TextView addCount = bottomSheetView.findViewById(R.id.addCountData);
-        TextView addMill = bottomSheetView.findViewById(R.id.addMillData);
+        TextView addAtta = bottomSheetView.findViewById(R.id.addMillData);
         TextView addBin = bottomSheetView.findViewById(R.id.addBinReport);
         TextView addAttaReport = bottomSheetView.findViewById(R.id.addAttaReport);
 
@@ -406,23 +404,23 @@ public class MillDataActivity extends AppCompatActivity {
 
         addCount.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddProductEntryActivity.class));
+            startActivity(new Intent(AttaReportActivity.this, AddProductEntryActivity.class));
         });
 
-        addMill.setOnClickListener(v -> {
+        addAtta.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddMillDataActivity.class));
+            startActivity(new Intent(AttaReportActivity.this, AddAttaReportActivity.class));
         });
 
         addBin.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddBinsActivity.class));
+            startActivity(new Intent(AttaReportActivity.this, AddBinsActivity.class));
         });
 
 
         addAttaReport.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            startActivity(new Intent(MillDataActivity.this, AddAttaReportActivity.class));
+            startActivity(new Intent(AttaReportActivity.this, AddAttaReportActivity.class));
         });
 
 
@@ -430,7 +428,7 @@ public class MillDataActivity extends AppCompatActivity {
         User userDet = user!= null? user: getUserFromPrefs();
 
         if(userDet != null && (userDet.getRole().equals(UserRoles.OPERATOR.getValue()) || userDet.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue()))) {
-            addMill.setVisibility(View.GONE);
+            addAtta.setVisibility(View.GONE);
             addBin.setVisibility(View.GONE);
             addAttaReport.setVisibility(View.GONE);
         }
@@ -443,7 +441,7 @@ public class MillDataActivity extends AppCompatActivity {
 
         if(userDet != null && userDet.getRole().equals(UserRoles.CONTROLLER.getValue())) {
             addCount.setVisibility(View.GONE);
-            addMill.setVisibility(View.GONE);
+            addAtta.setVisibility(View.GONE);
         }
 
         bottomSheetDialog.show();
@@ -456,4 +454,6 @@ public class MillDataActivity extends AppCompatActivity {
         super.onResume();
         checkSignedIn();
     }
+
+    
 }
