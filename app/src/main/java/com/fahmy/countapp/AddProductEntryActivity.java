@@ -72,13 +72,14 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
     String selectedProdId = null;
     AutoCompleteTextView autoText;
-    Button submitBtn;
+    Button submitBtn, selectOpeningCountImgBtn, selectClosingCountImgBtn;
     EditText openingCountEt, closingCountEt, confirmOpeningCountEt, confirmClosingCountEt, totalBagsEt, confirmTotalBagsEt;
-    ImageView selectImgIv;
+    ImageView selectedOpeningImgIv, selectedClosingImgIv;
 
     private static final int CAMERA_PERMISSION_CODE = 101;
-    private Uri photoUri;
-    private ActivityResultLauncher<Uri> takePictureLauncher;
+    private Uri openingPhotoUri, closingPhotoUri;
+    private ActivityResultLauncher<Uri> takeOpeningCountPictureLauncher, takeClosingCountPictureLauncher;
+    private Boolean isOpeningCountImage = true;
 
     User user;
 
@@ -105,31 +106,35 @@ public class AddProductEntryActivity extends AppCompatActivity {
             startActivity(new Intent(AddProductEntryActivity.this, LoginActivity.class));
             finish();
         }
-        selectImgIv = findViewById(R.id.selectImgIv);
+        selectedOpeningImgIv = findViewById(R.id.selectedOpeningImgIv);
+        selectedClosingImgIv = findViewById(R.id.selectedClosingImgIv);
 
-        takePictureLauncher = registerForActivityResult(
+        takeOpeningCountPictureLauncher = registerForActivityResult(
             new ActivityResultContracts.TakePicture(),
-            new ActivityResultCallback<Boolean>() {
-                @Override
-                public void onActivityResult(Boolean success) {
+                success -> {
                     if (success != null && success) {
-                        selectImgIv.setImageURI(photoUri);
-
-                        // If you need to refresh (sometimes needed for newly saved images):
-                        selectImgIv.invalidate();
-//                        Toast.makeText(AddProductEntryActivity.this,
-//                                "Photo saved: " + photoUri.toString(),
-//                                Toast.LENGTH_LONG).show();
+                        selectedOpeningImgIv.setVisibility(View.VISIBLE);
+                        selectedOpeningImgIv.setImageURI(openingPhotoUri);
+                        selectedOpeningImgIv.invalidate();
                     }
                 }
-            }
+        );
+
+        takeClosingCountPictureLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success != null && success) {
+                        selectedClosingImgIv.setVisibility(View.VISIBLE);
+                        selectedClosingImgIv.setImageURI(closingPhotoUri);
+                        selectedClosingImgIv.invalidate();
+                    }
+                }
         );
 
 
 
         autoText = findViewById(R.id.productsAutoText);
         submitBtn = findViewById(R.id.submitBtn);
-
         if (user.getRole().equals(UserRoles.OPERATOR.getValue())) {
 
             findViewById(R.id.openingClosingContainer).setVisibility(View.VISIBLE);
@@ -153,8 +158,28 @@ public class AddProductEntryActivity extends AppCompatActivity {
 
         fetchProducts(getTokenFromPrefs());
 
-        selectImgIv.setOnClickListener(v->{
+        selectOpeningCountImgBtn = findViewById(R.id.selectOpeningCountImgBtn);
+        selectClosingCountImgBtn = findViewById(R.id.selectClosingCountImgBtn);
 
+        selectOpeningCountImgBtn.setOnClickListener(v->{
+
+            //ask for permissions
+            isOpeningCountImage = true;
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                launchCamera();
+            } else {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.CAMERA},
+                        CAMERA_PERMISSION_CODE);
+            }
+
+        });
+
+        selectClosingCountImgBtn.setOnClickListener(v->{
+
+            isOpeningCountImage = false;
             //ask for permissions
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -197,15 +222,21 @@ public class AddProductEntryActivity extends AppCompatActivity {
             }else if(isBranPollardOperator && !confirmTotalBags.equals(totalBags)) {
                 confirmTotalBagsEt.setError("The total bags do not match, please double check");
                 confirmTotalBagsEt.requestFocus();
-            }else if(photoUri == null) {
+            }else if(openingPhotoUri == null) {
 
-                Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the machine recordings to continue", Toast.LENGTH_LONG).show();
+                Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the opening count machine recordings to continue", Toast.LENGTH_LONG).show();
+            }else if(closingPhotoUri == null) {
+
+                Toast.makeText(AddProductEntryActivity.this, "Please take a picture of the closing count machine recordings to continue", Toast.LENGTH_LONG).show();
             }else  {
 
-                File imageFile = new Util().getFileFromUri(photoUri, AddProductEntryActivity.this);
-                if (imageFile == null || !imageFile.exists()) {
-                    Toast.makeText(this, "Something went wrong. Please capture the Image again.", Toast.LENGTH_SHORT).show();
-                } else {
+                File openingCountImageFile = new Util().getFileFromUri(openingPhotoUri, AddProductEntryActivity.this);
+                File closingCountImageFile = new Util().getFileFromUri(openingPhotoUri, AddProductEntryActivity.this);
+                if (openingCountImageFile == null || !openingCountImageFile.exists()) {
+                    Toast.makeText(this, "Something went wrong. Please capture the opening count image again.", Toast.LENGTH_SHORT).show();
+                } else if (closingCountImageFile == null || !closingCountImageFile.exists()) {
+                    Toast.makeText(this, "Something went wrong. Please capture the closing count image again.", Toast.LENGTH_SHORT).show();
+                }  else {
 
 
                     EditText commentsET = findViewById(R.id.commentsET);
@@ -217,7 +248,8 @@ public class AddProductEntryActivity extends AppCompatActivity {
                         isBranPollardOperator?Long.parseLong(totalBags):0,
                         comments,
                         getTokenFromPrefs(),
-                        imageFile,
+                        openingCountImageFile,
+                        closingCountImageFile,
                         isBranPollardOperator
                     );
                 }
@@ -374,7 +406,8 @@ public class AddProductEntryActivity extends AppCompatActivity {
                                         seenProductIds.add(productId);
                                     }
 
-                                } else if (user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())) {
+                                }
+                                else if (user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())) {
                                     if(isBranPollardProduct) {
 
                                         productList.add(new Product(
@@ -385,6 +418,14 @@ public class AddProductEntryActivity extends AppCompatActivity {
                                         ));
                                         seenProductIds.add(productId);
                                     }
+                                }else if (user.getRole().equals(UserRoles.ADMIN.getValue())) {
+                                    productList.add(new Product(
+                                        obj.getString("id"),
+                                        obj.getString("name"),
+                                        obj.getString("barcode"),
+                                        obj.getString("description")
+                                    ));
+                                    seenProductIds.add(productId);
                                 }
                             }
                         }
@@ -426,7 +467,8 @@ public class AddProductEntryActivity extends AppCompatActivity {
         long totalBags,
         String comments,
         String jwtToken,
-        File imageFile,
+        File openingCountImgFile,
+        File closingCountImgFile,
         boolean isBranPollardOperator
     ) {
 
@@ -457,16 +499,27 @@ public class AddProductEntryActivity extends AppCompatActivity {
             builder.addFormDataPart("comments", comments);
         }
 
-        if (imageFile != null && imageFile.exists()) {
+        if (openingCountImgFile != null && openingCountImgFile.exists()) {
             builder.addFormDataPart(
-                "image",
-                imageFile.getName(),
+                "opening_count_img",
+                openingCountImgFile.getName(),
                 RequestBody.create(
-                    imageFile,
+                    openingCountImgFile,
                     MediaType.parse("image/*")
                 )
             );
         }
+        if (closingCountImgFile != null && closingCountImgFile.exists()) {
+            builder.addFormDataPart(
+                "closing_count_img",
+                closingCountImgFile.getName(),
+                RequestBody.create(
+                    closingCountImgFile,
+                    MediaType.parse("image/*")
+                )
+            );
+        }
+
 
         RequestBody requestBody = builder.build();
 
@@ -543,11 +596,19 @@ public class AddProductEntryActivity extends AppCompatActivity {
     private void launchCamera() {
         try {
             File imageFile = File.createTempFile("photo_", ".jpg", getCacheDir());
-            photoUri = FileProvider.getUriForFile(
+            openingPhotoUri = FileProvider.getUriForFile(
                     this,
                     getPackageName() + ".fileprovider",
                     imageFile);
-            takePictureLauncher.launch(photoUri);
+            closingPhotoUri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    imageFile);
+            if (isOpeningCountImage) {
+                takeOpeningCountPictureLauncher.launch(openingPhotoUri);
+            } else {
+                takeClosingCountPictureLauncher.launch(closingPhotoUri);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Error creating file", Toast.LENGTH_SHORT).show();

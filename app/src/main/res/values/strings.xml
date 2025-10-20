@@ -53,4 +53,9 @@
     <string name="atta_flour">Atta Flour</string>
     <string name="enter_the_number_of_bags">Enter The Total Number Of Bags</string>
     <string name="confirm_the_total_number_of_bags">Confirm The Total Number Of Bags</string>
+    <string name="capture_opening_count_image">Capture Opening Count Image</string>
+    <string name="capture_image1">Capture image</string>
+    <string name="confirm_closing_count">Confirm Closing Count</string>
+    <string name="capture_closing_count_image">Capture Closing Count Image</string>
+    <string name="confirm_the_opening_count">Confirm the Opening Count</string>
 </resources>

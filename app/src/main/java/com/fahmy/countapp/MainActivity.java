@@ -364,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
                                     String totalBags = obj.optString("bags", "");
                                     String totalBalesStr = obj.optString("total_bales", "0");
                                     String totalKgs = obj.optString("total_kgs", "0");
-                                    String filePath = obj.optString("photo_path", "");
+                                    String filePath = obj.optString("closing_count_img", "");
                                     String comments = obj.optString("comments", "");
 
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
