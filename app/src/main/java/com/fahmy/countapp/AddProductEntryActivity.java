@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,6 +20,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +43,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.fahmy.countapp.Adapters.ProductAutoCompleteAdapter;
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.Product;
+import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.User;
 import com.fahmy.countapp.Data.UserRoles;
 import com.fahmy.countapp.Data.Util;
@@ -75,11 +78,15 @@ public class AddProductEntryActivity extends AppCompatActivity {
     Button submitBtn, selectOpeningCountImgBtn, selectClosingCountImgBtn;
     EditText openingCountEt, closingCountEt, confirmOpeningCountEt, confirmClosingCountEt, totalBagsEt, confirmTotalBagsEt;
     ImageView selectedOpeningImgIv, selectedClosingImgIv;
+    TextView productsAutoTextTv;
 
+    LinearLayout openingCountContainerLL, closingContainerLL;
     private static final int CAMERA_PERMISSION_CODE = 101;
     private Uri openingPhotoUri, closingPhotoUri;
     private ActivityResultLauncher<Uri> takeOpeningCountPictureLauncher, takeClosingCountPictureLauncher;
     private Boolean isOpeningCountImage = true;
+
+    private ProductEntry productEntry;
 
     User user;
 
@@ -97,6 +104,22 @@ public class AddProductEntryActivity extends AppCompatActivity {
             actionBar.setTitle(R.string.add_product_report);
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            productEntry = getIntent().getSerializableExtra("productEntry", ProductEntry.class);
+        }
+
+        openingCountContainerLL = findViewById(R.id.openingCountContainerLL);
+        closingContainerLL = findViewById(R.id.closingContainerLL);
+        autoText = findViewById(R.id.productsAutoText);
+        productsAutoTextTv = findViewById(R.id.productsAutoTextTv);
+
+        openingCountContainerLL.setVisibility(productEntry != null? View.GONE:View.VISIBLE);
+        autoText.setVisibility(productEntry != null? View.GONE:View.VISIBLE);
+        productsAutoTextTv.setVisibility(productEntry != null? View.GONE:View.VISIBLE);
+        closingContainerLL.setVisibility(productEntry != null? View.VISIBLE:View.GONE);
+
+
+        selectedProdId = productEntry != null? productEntry.getProdId():null;
 
         String jsonUser = getSharedPreferences("MyPrefs", MODE_PRIVATE).getString("user", null);
         if(jsonUser != null) {
@@ -121,19 +144,18 @@ public class AddProductEntryActivity extends AppCompatActivity {
         );
 
         takeClosingCountPictureLauncher = registerForActivityResult(
-                new ActivityResultContracts.TakePicture(),
-                success -> {
-                    if (success != null && success) {
-                        selectedClosingImgIv.setVisibility(View.VISIBLE);
-                        selectedClosingImgIv.setImageURI(closingPhotoUri);
-                        selectedClosingImgIv.invalidate();
-                    }
+            new ActivityResultContracts.TakePicture(),
+            success -> {
+                if (success != null && success) {
+                    selectedClosingImgIv.setVisibility(View.VISIBLE);
+                    selectedClosingImgIv.setImageURI(closingPhotoUri);
+                    selectedClosingImgIv.invalidate();
                 }
+            }
         );
 
 
 
-        autoText = findViewById(R.id.productsAutoText);
         submitBtn = findViewById(R.id.submitBtn);
         if (user.getRole().equals(UserRoles.OPERATOR.getValue())) {
 
@@ -201,19 +223,19 @@ public class AddProductEntryActivity extends AppCompatActivity {
             String confirmClosingCount = confirmClosingCountEt.getText().toString();
             String confirmTotalBags = confirmTotalBagsEt.getText().toString();
             boolean isBranPollardOperator = user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue());
-            if(selectedProdId == null || selectedProdId.isEmpty()) {
+            if(productEntry == null && selectedProdId == null || selectedProdId.isEmpty()) {
                 autoText.setError("This field is required");
                 autoText.requestFocus();
-            } else if(!isBranPollardOperator && openingCount.isEmpty()) {
+            } else if(productEntry == null && !isBranPollardOperator && openingCount.isEmpty()) {
                 openingCountEt.setError("This field is required");
                 openingCountEt.requestFocus();
-            } else if(!isBranPollardOperator && closingCount.isEmpty()) {
+            } else if(productEntry != null && !isBranPollardOperator && closingCount.isEmpty()) {
                 closingCountEt.setError("This field is required");
                 closingCountEt.requestFocus();
-            } else if(!isBranPollardOperator && !confirmOpeningCount.equals(openingCount)) {
+            } else if(productEntry == null && !isBranPollardOperator && !confirmOpeningCount.equals(openingCount)) {
                 confirmOpeningCountEt.setError("The opening counts do not match, please double check");
                 confirmOpeningCountEt.requestFocus();
-            }else if(!isBranPollardOperator && !confirmClosingCount.equals(closingCount)) {
+            }else if(productEntry != null && !isBranPollardOperator && !confirmClosingCount.equals(closingCount)) {
                 confirmClosingCountEt.setError("The closing counts do not match, please double check");
                 confirmClosingCountEt.requestFocus();
             }else if(isBranPollardOperator && totalBags.isEmpty()) {
@@ -234,7 +256,7 @@ public class AddProductEntryActivity extends AppCompatActivity {
                 File closingCountImageFile = new Util().getFileFromUri(openingPhotoUri, AddProductEntryActivity.this);
                 if (openingCountImageFile == null || !openingCountImageFile.exists()) {
                     Toast.makeText(this, "Something went wrong. Please capture the opening count image again.", Toast.LENGTH_SHORT).show();
-                } else if (closingCountImageFile == null || !closingCountImageFile.exists()) {
+                } else if (productEntry != null && closingCountImageFile == null || !closingCountImageFile.exists()) {
                     Toast.makeText(this, "Something went wrong. Please capture the closing count image again.", Toast.LENGTH_SHORT).show();
                 }  else {
 
@@ -243,12 +265,12 @@ public class AddProductEntryActivity extends AppCompatActivity {
                     String comments = commentsET.getText().toString();
                     sendManualProductCount(
                         selectedProdId,
-                        isBranPollardOperator?0:Long.parseLong(openingCount),
-                        isBranPollardOperator?0:Long.parseLong(closingCount),
+                        isBranPollardOperator?0:productEntry != null?Util.getCountValue(productEntry.getOpeningCount()):Util.getCountValue(openingCount),
+                        isBranPollardOperator || productEntry == null?0:Long.parseLong(closingCount),
                         isBranPollardOperator?Long.parseLong(totalBags):0,
                         comments,
                         getTokenFromPrefs(),
-                        openingCountImageFile,
+                        productEntry != null ?null:openingCountImageFile,
                         closingCountImageFile,
                         isBranPollardOperator
                     );
@@ -520,14 +542,27 @@ public class AddProductEntryActivity extends AppCompatActivity {
             );
         }
 
+        builder.addFormDataPart("status", productEntry != null? "completed":"pending");
+
+
 
         RequestBody requestBody = builder.build();
 
-        Request request = new Request.Builder()
-            .url(ApiBase.DEV.getUrl() + "/manual-products-count")
-            .addHeader("Authorization", "Bearer " + jwtToken)
-            .post(requestBody)
-            .build();
+        Request request;
+
+        if (productEntry != null) {
+            request = new Request.Builder()
+                .url(ApiBase.DEV.getUrl() + "/manual-products-count/" + productEntry.getId())
+                .addHeader("Authorization", "Bearer " + jwtToken)
+                .put(requestBody)
+                .build();
+        } else {
+            request = new Request.Builder()
+                .url(ApiBase.DEV.getUrl() + "/manual-products-count")
+                .addHeader("Authorization", "Bearer " + jwtToken)
+                .post(requestBody)
+                .build();
+        }
 
         client.newCall(request).enqueue(new Callback() {
             @Override

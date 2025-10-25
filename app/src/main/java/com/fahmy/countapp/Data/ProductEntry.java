@@ -1,11 +1,14 @@
 package com.fahmy.countapp.Data;
 
-public class ProductEntry {
+import java.io.Serializable;
 
-    private String productTitle, productDescription, openingCount, closingCount, bags, totalCount, totalBales, totalKgs, photo_path, comments;
+public class ProductEntry implements Serializable {
+
+    private String id, prodId, productTitle, productDescription, status, openingCount, closingCount, bags, totalCount, totalBales, totalKgs, openingCountImg, closingCountImg, comments;
     private  boolean isBranPollardOperator;
 
-    public ProductEntry(String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String photo_path, String comments, boolean isBranPollardOperator) {
+    public ProductEntry(String id, String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String openingCountImg, String closingCountImg, String status, String comments, boolean isBranPollardOperator) {
+        this.id = id;
         this.productTitle = productTitle;
         this.productDescription = productDescription;
         this.openingCount = openingCount;
@@ -14,9 +17,46 @@ public class ProductEntry {
         this.totalCount = totalCount;
         this.totalBales = totalBales;
         this.totalKgs = totalKgs;
-        this.photo_path = photo_path;
+        this.openingCountImg = openingCountImg;
+        this.closingCountImg = closingCountImg;
+        this.status = status;
         this.comments = comments;
         this.isBranPollardOperator = isBranPollardOperator;
+    }
+
+    public ProductEntry(String id, String prodId, String productTitle, String productDescription, String openingCount, String closingCount, String bags, String totalCount, String totalBales, String totalKgs,  String openingCountImg, String closingCountImg, String status, String comments, boolean isBranPollardOperator) {
+        this.id = id;
+        this.prodId = prodId;
+        this.productTitle = productTitle;
+        this.productDescription = productDescription;
+        this.openingCount = openingCount;
+        this.closingCount = closingCount;
+        this.bags = bags;
+        this.totalCount = totalCount;
+        this.totalBales = totalBales;
+        this.totalKgs = totalKgs;
+        this.openingCountImg = openingCountImg;
+        this.closingCountImg = closingCountImg;
+        this.comments = comments;
+        this.status = status;
+        this.isBranPollardOperator = isBranPollardOperator;
+    }
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getProdId() {
+        return prodId;
+    }
+
+    public void setProdId(String prodId) {
+        this.prodId = prodId;
     }
 
     public String getProductTitle() {
@@ -29,6 +69,14 @@ public class ProductEntry {
 
     public String getProductDescription() {
         return productDescription;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public void setProductDescription(String productDescription) {
@@ -83,12 +131,20 @@ public class ProductEntry {
         this.totalKgs = totalKgs;
     }
 
-    public String getPhoto_path() {
-        return photo_path;
+    public String getOpeningCountImg() {
+        return openingCountImg;
     }
 
-    public void setPhoto_path(String photo_path) {
-        this.photo_path = photo_path;
+    public void setOpeningCountImg(String openingCountImg) {
+        this.openingCountImg = openingCountImg;
+    }
+
+    public String getClosingCountImg() {
+        return closingCountImg;
+    }
+
+    public void setClosingCountImg(String closingCountImg) {
+        this.closingCountImg = closingCountImg;
     }
 
     public String getComments() {

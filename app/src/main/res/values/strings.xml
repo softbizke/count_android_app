@@ -58,4 +58,5 @@
     <string name="confirm_closing_count">Confirm Closing Count</string>
     <string name="capture_closing_count_image">Capture Closing Count Image</string>
     <string name="confirm_the_opening_count">Confirm the Opening Count</string>
+    <string name="add_closing_count">Add Closing Count</string>
 </resources>

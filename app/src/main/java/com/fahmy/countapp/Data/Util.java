@@ -129,4 +129,8 @@ public class Util {
         }
     }
 
+    public static  Long getCountValue(String value) {
+        return value.isEmpty()?0:Long.parseLong(value);
+    }
+
 }

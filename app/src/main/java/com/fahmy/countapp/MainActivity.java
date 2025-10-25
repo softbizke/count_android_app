@@ -356,21 +356,25 @@ public class MainActivity extends AppCompatActivity {
                                 for (int i = 0; i < arr.length(); i++) {
                                     JSONObject obj = arr.getJSONObject(i);
 
+                                    String id = obj.optString("id");
+                                    String productId = obj.optString("product_id");
                                     String productTitle = obj.optString("product_name");
                                     String productDes = obj.optString("description");
                                     String openingCount = obj.optString("opening_count");
-                                    String closingCount = obj.optString("closing_count");
+                                    String closingCount = obj.optString("closing_count", null);
                                     String totalCount = obj.optString("total_count", "0");
                                     String totalBags = obj.optString("bags", "");
                                     String totalBalesStr = obj.optString("total_bales", "0");
                                     String totalKgs = obj.optString("total_kgs", "0");
-                                    String filePath = obj.optString("closing_count_img", "");
+                                    String openingCountFilePath = obj.optString("opening_count_img", "");
+                                    String closingCountFilePath = obj.optString("closing_count_img", "");
                                     String comments = obj.optString("comments", "");
+                                    String status = obj.optString("status", "pending");
 
                                     totalBalesStr = (totalBalesStr == null || totalBalesStr.equals("null") || totalBalesStr.isEmpty()) ? "0" : totalBalesStr;
                                     BigDecimal totalBales = new BigDecimal(totalBalesStr).setScale(2, RoundingMode.HALF_UP);
 
-                                    productEntriesList.add(new ProductEntry(productTitle, productDes, openingCount, closingCount, totalBags, totalCount, String.valueOf(totalBales.doubleValue()), totalKgs, filePath, comments, user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())));
+                                    productEntriesList.add(new ProductEntry(id, productId, productTitle, productDes, openingCount, closingCount, totalBags, totalCount, String.valueOf(totalBales.doubleValue()), totalKgs, openingCountFilePath, closingCountFilePath, status, comments, user.getRole().equals(UserRoles.BRAN_POLLARD_OPERATOR.getValue())));
                                 }
                                 adapter.notifyDataSetChanged();
                             }

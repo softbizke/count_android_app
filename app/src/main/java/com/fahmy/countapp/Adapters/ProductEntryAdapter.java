@@ -1,22 +1,27 @@
 package com.fahmy.countapp.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.Image;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fahmy.countapp.AddProductEntryActivity;
 import com.fahmy.countapp.Data.ApiBase;
 import com.fahmy.countapp.Data.ProductEntry;
 import com.fahmy.countapp.Data.Util;
 import com.fahmy.countapp.R;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -43,14 +48,35 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
     @Override
     public void onBindViewHolder(@NonNull ProductEntryAdapter.ViewHolder holder, int position) {
         ProductEntry productEntry = items.get(position);
+        Log.i("productEntry", new Gson().toJson(productEntry));
         holder.productTitleTv.setText(productEntry.getProductTitle() + " - " + Util.extractWeight(productEntry.getProductDescription() ) + " Kgs");
         if(!productEntry.isBranPollardOperator()) {
             holder.openingCountTv.setVisibility(View.VISIBLE);
             holder.closingCountTv.setVisibility(View.VISIBLE);
             holder.openingCountTv.setText("Opening: " + productEntry.getOpeningCount());
-            holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
-            holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
-            holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
+
+//            Log.i("")
+            if (productEntry.getStatus().toLowerCase().equals("completed")){
+                holder.addClosingCountBtn.setVisibility(View.GONE);
+                holder.badgeContainer.setVisibility(View.VISIBLE);
+                holder.closingCountTv.setVisibility(View.VISIBLE);
+                holder.closingCountTv.setText("Closing: " + productEntry.getClosingCount());
+                holder.totalCountTv.setText("Count: " + productEntry.getTotalCount());
+                holder.totalBalesTv.setText(productEntry.getTotalBales()+" bales");
+            } else {
+                holder.addClosingCountBtn.setVisibility(View.VISIBLE);
+                holder.badgeContainer.setVisibility(View.GONE);
+                holder.closingCountTv.setVisibility(View.GONE);
+                holder.addClosingCountBtn.setOnClickListener(v->{
+                    Intent i = new Intent(context, AddProductEntryActivity.class);
+                    i.putExtra("productEntry", productEntry);
+                    context.startActivity(i);
+                });
+
+
+            }
+
+
         } else {
             holder.totalCountTv.setText("Bags: " + productEntry.getBags());
             holder.totalBalesTv.setText(productEntry.getTotalKgs()+" Kgs");
@@ -67,16 +93,16 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
         }
 
 //        Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
-        if(!productEntry.getPhoto_path().isEmpty()) {
+        if(!productEntry.getOpeningCountImg().isEmpty()) {
 
-            Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getPhoto_path());
+            Log.i("Image path", ApiBase.ROOT.getUrl() + productEntry.getOpeningCountImg());
             Picasso.get()
-                .load(ApiBase.ROOT.getUrl() + productEntry.getPhoto_path())
+                .load(ApiBase.ROOT.getUrl() + productEntry.getOpeningCountImg())
                 .placeholder(R.drawable.baseline_document_scanner_24)
                 .error(R.drawable.baseline_document_scanner_24)
                 .into(holder.photoIv);
 
-            holder.photoIv.setOnClickListener(v-> showImageDialog(ApiBase.ROOT.getUrl() + productEntry.getPhoto_path()));
+            holder.photoIv.setOnClickListener(v-> showImageDialog(ApiBase.ROOT.getUrl() + productEntry.getOpeningCountImg()));
         }
     }
 
@@ -89,6 +115,9 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
         TextView productTitleTv, openingCountTv, closingCountTv, totalCountTv, totalBalesTv, commentsTv;
         ImageView photoIv;
 
+        LinearLayout badgeContainer;
+        TextView addClosingCountBtn;
+
         public ViewHolder(View view) {
             super(view);
             productTitleTv = view.findViewById(R.id.productTitleTv);
@@ -98,6 +127,8 @@ public class ProductEntryAdapter extends RecyclerView.Adapter<ProductEntryAdapte
             totalBalesTv = view.findViewById(R.id.totalBalesTv);
             photoIv = view.findViewById(R.id.photoIv);
             commentsTv = view.findViewById(R.id.commentsTv);
+            badgeContainer = view.findViewById(R.id.badgeContainer);
+            addClosingCountBtn = view.findViewById(R.id.addClosingCountBtn);
         }
     }
 
